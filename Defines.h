@@ -5,7 +5,7 @@
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
 
-#include <cmath>
+#include "Position.h"
 
 static const int SERVO_NUM = 6;
 static const int SERVO_MIN = 150;
@@ -16,46 +16,6 @@ static const float SERVO_LEN = 40.0;
 static const float SERVO_DIST = 162.8;
 static const float LEG_LEN = 182.0;
 static const int Z_HOME = 144;
-
-typedef struct __position__
-{
-    int x;
-    int y;
-    int z;
-
-    __position__()
-    {
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-    }
-    __position__(int _x, int _y, int _z)
-    {
-        this.x = _x;
-        this.y = _y;
-        this.z = _z;
-    }
-
-    void add (Position a)
-    {
-        this.x += a.x;
-        this.y += a.y;
-        this.z += a.z;
-    }
-
-    void sub (Position a)
-    {
-        this.x -= a.x;
-        this.y -= a.y;
-        this.z -= a.z;
-    }
-
-    void magSquared ()
-    {
-        return pow(this.x, 2) + pow(this.y, 2) + pow(this.z, 2);
-    }
-
-} Position;
 
 typedef struct __servo__
 {

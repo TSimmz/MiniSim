@@ -16,19 +16,7 @@ Simulation::~Simulation()
 
 int Simulation::init()
 {
-    p_pos = Position();
-    p_rot = Position();
-    T     = Position();
-    H     = Position();
-
-    rotMatrix = 
-    {
-        {0.0, 0.0, 0.0},
-        {0.0, 0.0, 0.0},
-        {0.0, 0.0, 0.0}
-    }
-
-    servo_init()
+    servo_init();
     cntrl_init();
 }
 

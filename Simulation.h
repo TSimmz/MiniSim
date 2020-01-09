@@ -6,6 +6,7 @@
 #define __SIM_H__
 
 #include "Defines.h"
+#include "Position.h"
 
 class Simulation
 {
@@ -40,6 +41,6 @@ private:
     Position T;     // Translational matrix
     Position H;     // Center position of platform
 
-}
+};
 
 #endif
