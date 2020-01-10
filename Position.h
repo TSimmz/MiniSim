@@ -2,33 +2,36 @@
 #define _POSITION_H_
 
 #include <math.h>
+#include "Defines.h"
 
 class Position
 {
     
 public:
     Position();
-    Position(int x, int y, int z);
+    Position(float x, float y, float z);
     ~Position();
+
+    //Overloaded equal operator needed here;
     
 private:
-    int x_coord;
-    int y_coord;
-    int z_coord;
+    float x_coord;
+    float y_coord;
+    float z_coord;
     
 public:
-    void setXCoord(int x);
-    void setYCoord(int y);
-    void setZCoord(int z);
+    void setXCoord(float x);
+    void setYCoord(float y);
+    void setZCoord(float z);
 
-    int getXCoord();
-    int getYCoord();
-    int getZCoord();
+    float getXCoord();
+    float getYCoord();
+    float getZCoord();
 
     void addPostionToThis(Position p);
     void subPositionFromThis(Position p);
     
-    int posMagnitudeSquared();
+    float posMagnitudeSquared();
     
 };
 

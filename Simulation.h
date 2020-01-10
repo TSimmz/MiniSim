@@ -18,28 +18,28 @@ public:
     int run();
 
 private:
-    int servo_init();
-    int cntrl_init();
+    int servoArmInitialization();
+    int controllerInitialization();
 
-    int movePlatform();
+    void updatePlatformPosition();
 
-    int getTranslationalMatrix();
-    int getRotationalMatrix();
+    void calculateTranslationalMatrix();
+    void calculateRotationalMatrix();
 
-    int getQandL();
+    void calculatePlatformAnchor();
+    void calculateLegLength();
 
-    int getAlpha();
+    int getAlphaAngle();
 
-private:
-    Servo servo_list[6];
+    //Servo servo_list[6];
 
-    Position p_pos;     // Requested position of platform
-    Position p_rot;     // Requested rotation of platform
+    Position requestedPlatformPosition;
+    Position requestedPlatformRotation;
 
-    float rotMatrix[3][3]; // Rotational matrix
+    float rotationalMatrix[3][3];
 
-    Position T;     // Translational matrix
-    Position H;     // Center position of platform
+    Position translationalMatrix;
+    Position platformHome;
 
 };
 
