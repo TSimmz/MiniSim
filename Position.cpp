@@ -14,48 +14,33 @@ Position::Position(float x, float y, float z)
     z_coord = z;
 }
 
-void Position::setXCoord(float x)
+Position & Position::operator=(const Position& other)
 {
-    x_coord = x;
+    this->x_coord = other.x_coord;
+    this->y_coord = other.y_coord;
+    this->z_coord = other.z_coord;
 }
 
-void Position::setYCoord(float y)
+Position Position::addPositionToThis(Position p)
 {
-    y_coord = y;
+    Position newPos = Position();
+
+    newPos.x_coord = this->x_coord + p.x_coord;
+    newPos.y_coord = this->y_coord + p.y_coord;
+    newPos.z_coord = this->z_coord + p.z_coord;
+    
+    return newPos;
 }
 
-void Position::setZCoord(float z)
+Position Position::subPositionFromThis(Position p)
 {
-    z_coord = z;
-}
+    Position newPos = Position();
 
-float Position::getXCoord()
-{
-    return x_coord;
-}
-
-float Position::getYCoord()
-{
-    return y_coord;
-}
-
-float Position::getZCoord()
-{
-    return z_coord;
-}
-
-void Position::addPostionToThis(Position p)
-{
-    x_coord += p.x_coord;
-    y_coord += p.y_coord;
-    z_coord += p.z_coord;
-}
-
-void Position::subPositionFromThis(Position p)
-{
-    x_coord -= p.x_coord;
-    y_coord -= p.y_coord;
-    z_coord -= p.z_coord;
+    newPos.x_coord = this->x_coord - p.x_coord;
+    newPos.y_coord = this->y_coord - p.y_coord;
+    newPos.z_coord = this->z_coord - p.z_coord;
+    
+    return newPos;
 }
 
 float Position::posMagnitudeSquared()

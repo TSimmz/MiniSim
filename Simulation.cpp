@@ -6,23 +6,24 @@
 
 Simulation::Simulation()
 {
-
-}
-
-Simulation::~Simulation()
-{
-
+  pwm = Adafruit_PWMServoDriver();
+  basePosition = Position(0, 0, 0);
+  platformPosition = Position(0, 0, Z_HOME);
 }
 
 int Simulation::init()
 {
-    servoArmInitialization();
-    controllerInitialization();
+  pwm.begin();
+  
+  pwm.setPWMFreq(SERVO_FREQ);  
+  delay(10); 
+  
+  servoArmInitialization();
 }
 
-int Simulation::run()
+int Simulation::run(int pitch, int roll, int yaw)
 {
-
+  
 }
 
 int Simulation::servoArmInitialization()
@@ -30,19 +31,23 @@ int Simulation::servoArmInitialization()
 
 }
 
-int Simulation::controllerInitialization()
-{
-
-}
-
 void Simulation::updatePlatformPosition()
 {
+  calculateTranslationalMatrix();
+  calculateRotationalMatrix();
+  calculatePlatformAnchor();
+  calculateLegLength();
+  calculateAlphaServoAngle();
 
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    pwm.setPWM(arm, 0, servoArmArray[arm].alphaAngleToHorizontal);
+  }
 }
 
 void Simulation::calculateTranslationalMatrix()
 {
-  //translationalMatrix = requestedPlatformPosition.addPostionToThis(platformHome);
+  translationalMatrix = requestedPlatformPosition.addPositionToThis(platformHome);
 }
 
 void Simulation::calculateRotationalMatrix()
@@ -51,9 +56,9 @@ void Simulation::calculateRotationalMatrix()
   int theta; // rotation about y-axis (pitch)
   int phi;   // rotation about x-axis (roll)
 
-  psi   = requestedPlatformRotation.getZCoord();
-  theta = requestedPlatformRotation.getYCoord();
-  phi   = requestedPlatformRotation.getXCoord();
+  psi   = requestedPlatformRotation.z_coord;
+  theta = requestedPlatformRotation.y_coord;
+  phi   = requestedPlatformRotation.x_coord;
 
   rotationalMatrix[0][0] = cos(psi)*cos(theta);
   rotationalMatrix[0][1] = (-1*sin(psi)*cos(phi)) + (cos(psi)*sin(theta)*sin(phi));
@@ -70,15 +75,50 @@ void Simulation::calculateRotationalMatrix()
 
 void Simulation::calculatePlatformAnchor()
 {
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    servoArmArray[arm].platformAnchorPoint_Q.x_coord = translationalMatrix.x_coord + 
+        ( rotationalMatrix[0][0] * servoArmArray[arm].platformJoint.x_coord +
+          rotationalMatrix[0][1] * servoArmArray[arm].platformJoint.y_coord +
+          rotationalMatrix[0][2] * servoArmArray[arm].platformJoint.z_coord );
 
+    servoArmArray[arm].platformAnchorPoint_Q.y_coord = translationalMatrix.y_coord + 
+        ( rotationalMatrix[1][0] * servoArmArray[arm].platformJoint.x_coord +
+          rotationalMatrix[1][1] * servoArmArray[arm].platformJoint.y_coord +
+          rotationalMatrix[1][2] * servoArmArray[arm].platformJoint.z_coord );
+
+    servoArmArray[arm].platformAnchorPoint_Q.z_coord = translationalMatrix.z_coord + 
+        ( rotationalMatrix[2][0] * servoArmArray[arm].platformJoint.x_coord +
+          rotationalMatrix[2][1] * servoArmArray[arm].platformJoint.y_coord +
+          rotationalMatrix[2][2] * servoArmArray[arm].platformJoint.z_coord );
+
+  }
 }
 
 void Simulation::calculateLegLength()
 {
-  
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    servoArmArray[arm].lengthOfLeg_L = servoArmArray[arm].platformAnchorPoint_Q.subPositionFromThis(servoArmArray[arm].baseJoint);
+  }
 }
 
-int Simulation::getAlphaAngle()
+void Simulation::calculateAlphaServoAngle()
 {
+  float Aknot = 0.0;
+  float Lknot = 0.0;
+  float Mknot = 0.0;
+  float Nknot = 0.0;
 
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    Lknot = servoArmArray[arm].lengthOfLeg_L.posMagnitudeSquared() - (float)(pow(LEG_LEN, 2) + pow(SERVO_LEN, 2));
+    Mknot = 2.0 * SERVO_LEN * servoArmArray[arm].lengthOfLeg_L.z_coord;
+    Nknot = 2.0 * SERVO_LEN * ((cos(servoArmArray[arm].betaAngleToXAxis) * (float)servoArmArray[arm].lengthOfLeg_L.x_coord) + 
+                               (sin(servoArmArray[arm].betaAngleToXAxis) * (float)servoArmArray[arm].lengthOfLeg_L.y_coord));
+
+    Aknot = asin(Lknot / (pow(Mknot, 2) + pow(Nknot, 2))) - atan(Nknot / Mknot);
+
+    servoArmArray[arm].alphaAngleToHorizontal = (servoArmArray[arm].isMirrored()) ? Aknot : (M_PI - Aknot);
+  }
 }

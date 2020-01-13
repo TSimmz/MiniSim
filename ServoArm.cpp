@@ -2,10 +2,14 @@
 
 ServoArm::ServoArm()
 {
-  
+  baseJoint = Position();
+  platformJoint = Position();
+
+  platformAnchorPoint_Q = Position();
+  lengthOfLeg_L = Position();
 }
 
-ServoArm::~ServoArm()
+void ServoArm::setServoArmPosition(int angle)
 {
   
 }
