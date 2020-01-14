@@ -13,8 +13,8 @@ public:
   
   bool isMirrored();
 
-  void calculateBasePosition();
-  void calculatePlatformPosition();
+  void calculateBaseJointPosition();
+  void calculatePlatformJointPosition();
 
 public:
   int servoID;

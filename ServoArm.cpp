@@ -19,16 +19,16 @@ bool ServoArm::isMirrored()
   return mirrorServo;
 }
 
-void ServoArm::calculateBasePosition()
+void ServoArm::calculateBaseJointPosition()
 {
-  basePosition.x_coord = baseDistance * sin(radians(baseAngle));
-  basePosition.y_coord = baseDistance * cos(radians(baseAngle));
-  basePosition.z_coord = 0.0;
+  baseJoint.x_coord = baseDistance * sin(radians(baseAngle));
+  baseJoint.y_coord = baseDistance * cos(radians(baseAngle));
+  baseJoint.z_coord = 0.0;
 }
 
-void ServoArm::calculatePlatformPosition()
+void ServoArm::calculatePlatformJointPosition()
 {
-  platformPosition.x_coord = platformDistance * sin(radians(platformAngle));
-  platformPosition.y_coord = platformDistance * cos(radians(platformAngle));
-  platformPosition.z_coord = Z_HOME;
+  platformJoint.x_coord = platformDistance * sin(radians(platformAngle));
+  platformJoint.y_coord = platformDistance * cos(radians(platformAngle));
+  platformJoint.z_coord = Z_HOME;
 }

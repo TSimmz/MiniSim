@@ -29,6 +29,8 @@ int Simulation::run(int pitch, int roll, int yaw)
   requestedPlatformRotation.y_coord = pitchMapped;
   requestedPlatformRotation.x_coord = 0; //rollMapped;
   requestedPlatformRotation.z_coord = 0; //yawMapped;
+
+  updatePlatformPosition();
 }
 
 int Simulation::servoArmInitialization()
@@ -95,8 +97,8 @@ int Simulation::servoArmInitialization()
 
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
-    servoArmArray[arm].calculateBasePosition();
-    servoArmArray[arm].calculatePlatformPosition();
+    servoArmArray[arm].calculateBaseJointPosition();
+    servoArmArray[arm].calculatePlatformJointPosition();
   }
 }
 
@@ -121,9 +123,9 @@ void Simulation::calculateTranslationalMatrix()
 
 void Simulation::calculateRotationalMatrix()
 {
-  int psi;   // rotation about z-axis (yaw)
-  int theta; // rotation about y-axis (pitch)
-  int phi;   // rotation about x-axis (roll)
+  float psi;   // rotation about z-axis (yaw) in radians
+  float theta; // rotation about y-axis (pitch) in radians
+  float phi;   // rotation about x-axis (roll) in radians
 
   psi   = requestedPlatformRotation.z_coord;
   theta = requestedPlatformRotation.y_coord;
