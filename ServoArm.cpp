@@ -19,14 +19,16 @@ bool ServoArm::isMirrored()
   return mirrorServo;
 }
 
-void ServoArm::setMinMaxPulseWidth(int min, int max)
+void ServoArm::calculateBasePosition()
 {
-  minPulseWidth = min;
-  maxPulseWidth = max;
+  basePosition.x_coord = baseDistance * sin(radians(baseAngle));
+  basePosition.y_coord = baseDistance * cos(radians(baseAngle));
+  basePosition.z_coord = 0.0;
 }
 
-void ServoArm::setMinMaxPosition(int min, int max)
+void ServoArm::calculatePlatformPosition()
 {
-  minPosition = min;
-  maxPosition = max;
+  platformPosition.x_coord = platformDistance * sin(radians(platformAngle));
+  platformPosition.y_coord = platformDistance * cos(radians(platformAngle));
+  platformPosition.z_coord = Z_HOME;
 }

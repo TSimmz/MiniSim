@@ -33,11 +33,71 @@ int Simulation::run(int pitch, int roll, int yaw)
 
 int Simulation::servoArmInitialization()
 {
+  servoArmArray[SERVO1].servoID          = SERVO1;
+  servoArmArray[SERVO1].minPulseWidth    = SERVO_MIN;
+  servoArmArray[SERVO1].maxPulseWidth    = SERVO_MAX;
+  servoArmArray[SERVO1].baseAngle        = 308.0;
+  servoArmArray[SERVO1].baseDistance     = BASE_DIST;
+  servoArmArray[SERVO1].platformAngle    = 273.1;
+  servoArmArray[SERVO1].plaformDistance  = PLAT_DIST;
+  servoArmArray[SERVO1].betaAngleToXAxis = radians(90);
+  servoArmArray[SERVO1].mirrorServo      = false;
+
+  servoArmArray[SERVO2].servoID          = SERVO2;
+  servoArmArray[SERVO2].minPulseWidth    = SERVO_MIN;
+  servoArmArray[SERVO2].maxPulseWidth    = SERVO_MAX;
+  servoArmArray[SERVO2].baseAngle        = 352.0;
+  servoArmArray[SERVO2].baseDistance     = BASE_DIST;
+  servoArmArray[SERVO2].platformAngle    = 26.9;
+  servoArmArray[SERVO2].plaformDistance  = PLAT_DIST;
+  servoArmArray[SERVO2].betaAngleToXAxis = radians(150);
+  servoArmArray[SERVO2].mirrorServo      = true;
+
+  servoArmArray[SERVO3].servoID          = SERVO3;
+  servoArmArray[SERVO3].minPulseWidth    = SERVO_MIN;
+  servoArmArray[SERVO3].maxPulseWidth    = SERVO_MAX;
+  servoArmArray[SERVO3].baseAngle        = 68.0;
+  servoArmArray[SERVO3].baseDistance     = BASE_DIST;
+  servoArmArray[SERVO3].platformAngle    = 33.1;
+  servoArmArray[SERVO3].plaformDistance  = PLAT_DIST;
+  servoArmArray[SERVO3].betaAngleToXAxis = radians(330);
+  servoArmArray[SERVO3].mirrorServo      = false;
+
+  servoArmArray[SERVO4].servoID          = SERVO4;
+  servoArmArray[SERVO4].minPulseWidth    = SERVO_MIN;
+  servoArmArray[SERVO4].maxPulseWidth    = SERVO_MAX;
+  servoArmArray[SERVO4].baseAngle        = 112.0;
+  servoArmArray[SERVO4].baseDistance     = BASE_DIST;
+  servoArmArray[SERVO4].platformAngle    = 146.9;
+  servoArmArray[SERVO4].plaformDistance  = PLAT_DIST;
+  servoArmArray[SERVO4].betaAngleToXAxis = radians(30);
+  servoArmArray[SERVO4].mirrorServo      = true;
+
+  servoArmArray[SERVO5].servoID          = SERVO5;
+  servoArmArray[SERVO5].minPulseWidth    = SERVO_MIN;
+  servoArmArray[SERVO5].maxPulseWidth    = SERVO_MAX;
+  servoArmArray[SERVO5].baseAngle        = 188.0;
+  servoArmArray[SERVO5].baseDistance     = BASE_DIST;
+  servoArmArray[SERVO5].platformAngle    = 153.1;
+  servoArmArray[SERVO5].plaformDistance  = PLAT_DIST;
+  servoArmArray[SERVO5].betaAngleToXAxis = radians(210);
+  servoArmArray[SERVO5].mirrorServo      = false;
+
+  servoArmArray[SERVO6].servoID          = SERVO6;
+  servoArmArray[SERVO6].minPulseWidth    = SERVO_MIN;
+  servoArmArray[SERVO6].maxPulseWidth    = SERVO_MAX;
+  servoArmArray[SERVO6].baseAngle        = 232.0;
+  servoArmArray[SERVO6].baseDistance     = BASE_DIST;
+  servoArmArray[SERVO6].platformAngle    = 266.9;
+  servoArmArray[SERVO6].plaformDistance  = PLAT_DIST;
+  servoArmArray[SERVO6].betaAngleToXAxis = radians(270);
+  servoArmArray[SERVO6].mirrorServo      = true;
+
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
-  
+    servoArmArray[arm].calculateBasePosition();
+    servoArmArray[arm].calculatePlatformPosition();
   }
-  servoArmArray[0] = ServoArmArray();
 }
 
 void Simulation::updatePlatformPosition()

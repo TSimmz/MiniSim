@@ -12,10 +12,10 @@ public:
   void setServoArmPosition(int angle);
   
   bool isMirrored();
-  
-  void setMinMaxPulseWidth(int min, int max);
-  void setMinMaxPosition(int min, int max);
-  
+
+  void calculateBasePosition();
+  void calculatePlatformPosition();
+
 public:
   int servoID;
   int pwm;
@@ -26,10 +26,12 @@ public:
   int minPosition;
   int maxPosition;
 
-  int baseAngle;
+  float baseAngle;
+  float baseDistance;
   Position baseJoint;
 
-  int platformAngle;
+  float platformAngle;
+  float platformDistance;
   Position platformJoint;
 
   bool mirrorServo;
