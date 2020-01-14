@@ -1,7 +1,10 @@
-// Main entry point of simulation
+//================================================================
+// MiniSim.ino
+//================================================================
 
-#include "Simulation.h"
 #include "Defines.h"
+#include "Simulation.h"
+
 #include <Wire.h>
 
 #define PITCH_STICK 0

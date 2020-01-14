@@ -1,3 +1,7 @@
+//================================================================
+// ServoArm.h
+//================================================================
+
 #ifndef _SERVOARM_H_
 #define _SERVOARM_H_
 
@@ -8,8 +12,6 @@ class ServoArm
 {
 public:
   ServoArm();
-
-  void setServoArmPosition(int angle);
   
   bool isMirrored();
 

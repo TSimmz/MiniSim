@@ -4,6 +4,9 @@
 
 #include "Simulation.h"
 
+//======================================================
+// Constructor
+//======================================================
 Simulation::Simulation()
 {
   pwm = Adafruit_PWMServoDriver();
@@ -11,6 +14,9 @@ Simulation::Simulation()
   platformPosition = Position(0, 0, Z_HOME);
 }
 
+//======================================================
+// Initialize the simulation
+//======================================================
 int Simulation::init()
 {
   pwm.begin();
@@ -20,6 +26,9 @@ int Simulation::init()
   servoArmInitialization();
 }
 
+//======================================================
+// Runs the simulation in a loop
+//======================================================
 int Simulation::run(int pitch, int roll, int yaw)
 {
   float pitchMapped = radians(map(pitch, 0, 1023, -45, 45)); 
@@ -33,6 +42,9 @@ int Simulation::run(int pitch, int roll, int yaw)
   updatePlatformPosition();
 }
 
+//======================================================
+// Initializes all the servos arms
+//======================================================
 int Simulation::servoArmInitialization()
 {
   servoArmArray[SERVO1].servoID          = SERVO1;
@@ -102,6 +114,9 @@ int Simulation::servoArmInitialization()
   }
 }
 
+//======================================================
+// Calculate all the platform variables and set position
+//======================================================
 void Simulation::updatePlatformPosition()
 {
   calculateTranslationalMatrix();
@@ -116,11 +131,17 @@ void Simulation::updatePlatformPosition()
   }
 }
 
+//======================================================
+// Calculates the translational matrix of the platform
+//======================================================
 void Simulation::calculateTranslationalMatrix()
 {
   translationalMatrix = requestedPlatformPosition.addPositionToThis(platformHome);
 }
 
+//======================================================
+// Calculates the rotational matrix of the platform
+//======================================================
 void Simulation::calculateRotationalMatrix()
 {
   float psi;   // rotation about z-axis (yaw) in radians
@@ -144,6 +165,9 @@ void Simulation::calculateRotationalMatrix()
   rotationalMatrix[2][2] = cos(theta)*cos(phi);
 }
 
+//======================================================
+// Calculates the new position of each servo arms joint
+//======================================================
 void Simulation::calculatePlatformAnchor()
 {
   for (int arm = 0; arm < SERVO_NUM; arm++)
@@ -166,6 +190,9 @@ void Simulation::calculatePlatformAnchor()
   }
 }
 
+//======================================================
+// Calculates the new leg lengths
+//======================================================
 void Simulation::calculateLegLength()
 {
   for (int arm = 0; arm < SERVO_NUM; arm++)
@@ -174,6 +201,9 @@ void Simulation::calculateLegLength()
   }
 }
 
+//======================================================
+// Calculates the new servo angles
+//======================================================
 void Simulation::calculateAlphaServoAngle()
 {
   float Aknot = 0.0;
@@ -185,8 +215,8 @@ void Simulation::calculateAlphaServoAngle()
   {
     Lknot = servoArmArray[arm].lengthOfLeg_L.posMagnitudeSquared() - (float)(pow(LEG_LEN, 2) + pow(SERVO_LEN, 2));
     Mknot = 2.0 * SERVO_LEN * servoArmArray[arm].lengthOfLeg_L.z_coord;
-    Nknot = 2.0 * SERVO_LEN * ((cos(servoArmArray[arm].betaAngleToXAxis) * (float)servoArmArray[arm].lengthOfLeg_L.x_coord) + 
-                               (sin(servoArmArray[arm].betaAngleToXAxis) * (float)servoArmArray[arm].lengthOfLeg_L.y_coord));
+    Nknot = 2.0 * SERVO_LEN * ((cos(servoArmArray[arm].betaAngleToXAxis) * servoArmArray[arm].lengthOfLeg_L.x_coord) + 
+                               (sin(servoArmArray[arm].betaAngleToXAxis) * servoArmArray[arm].lengthOfLeg_L.y_coord));
 
     Aknot = asin(Lknot / (pow(Mknot, 2) + pow(Nknot, 2))) - atan(Nknot / Mknot);
 

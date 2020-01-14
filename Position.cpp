@@ -1,5 +1,12 @@
+//================================================================
+// Position.cpp
+//================================================================
+
 #include "Position.h"
 
+//======================================================
+// Constructor - Empty
+//======================================================
 Position::Position()
 {
     x_coord = 0.0;
@@ -7,6 +14,9 @@ Position::Position()
     z_coord = 0.0;
 }
 
+//======================================================
+// Constructor - Set all variables
+//======================================================
 Position::Position(float x, float y, float z)
 {
     x_coord = x;
@@ -14,6 +24,9 @@ Position::Position(float x, float y, float z)
     z_coord = z;
 }
 
+//======================================================
+// Overloaded equality operator
+//======================================================
 Position & Position::operator=(const Position& other)
 {
     this->x_coord = other.x_coord;
@@ -21,6 +34,9 @@ Position & Position::operator=(const Position& other)
     this->z_coord = other.z_coord;
 }
 
+//======================================================
+// Adds two positions and returns the new position
+//======================================================
 Position Position::addPositionToThis(Position p)
 {
     Position newPos = Position();
@@ -32,6 +48,9 @@ Position Position::addPositionToThis(Position p)
     return newPos;
 }
 
+//======================================================
+// Subtracts two positions and returns the new position
+//======================================================
 Position Position::subPositionFromThis(Position p)
 {
     Position newPos = Position();
@@ -43,6 +62,9 @@ Position Position::subPositionFromThis(Position p)
     return newPos;
 }
 
+//======================================================
+// Returns the magnitude squared of the position
+//======================================================
 float Position::posMagnitudeSquared()
 {
     return pow(x_coord, 2.0) + pow(y_coord, 2.0) + pow(z_coord, 2.0);

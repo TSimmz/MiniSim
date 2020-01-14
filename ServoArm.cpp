@@ -1,5 +1,12 @@
+//================================================================
+// ServoArm.cpp
+//================================================================
+
 #include "ServoArm.h"
 
+//======================================================
+// Constructor
+//======================================================
 ServoArm::ServoArm()
 {
   baseJoint = Position();
@@ -9,16 +16,17 @@ ServoArm::ServoArm()
   lengthOfLeg_L = Position();
 }
 
-void ServoArm::setServoArmPosition(int angle)
-{
-  
-}
-
+//======================================================
+// Returns the state of the servo (mirror or not)
+//======================================================
 bool ServoArm::isMirrored()
 {
   return mirrorServo;
 }
 
+//======================================================
+// Calculates the base joint position
+//======================================================
 void ServoArm::calculateBaseJointPosition()
 {
   baseJoint.x_coord = baseDistance * sin(radians(baseAngle));
@@ -26,6 +34,9 @@ void ServoArm::calculateBaseJointPosition()
   baseJoint.z_coord = 0.0;
 }
 
+//======================================================
+// Calculates the platform joint positions
+//======================================================
 void ServoArm::calculatePlatformJointPosition()
 {
   platformJoint.x_coord = platformDistance * sin(radians(platformAngle));
