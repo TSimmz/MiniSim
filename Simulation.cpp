@@ -14,7 +14,6 @@ Simulation::Simulation()
 int Simulation::init()
 {
   pwm.begin();
-  
   pwm.setPWMFreq(SERVO_FREQ);  
   delay(10); 
   
@@ -23,12 +22,22 @@ int Simulation::init()
 
 int Simulation::run(int pitch, int roll, int yaw)
 {
+  float pitchMapped = radians(map(pitch, 0, 1023, -45, 45)); 
+  float rollMapped = radians(map(roll, 0, 1023, -45, 45)); 
+  float yawMapped = radians(map(yaw, 0, 1023, -45, 45)); 
   
+  requestedPlatformRotation.y_coord = pitchMapped;
+  requestedPlatformRotation.x_coord = 0; //rollMapped;
+  requestedPlatformRotation.z_coord = 0; //yawMapped;
 }
 
 int Simulation::servoArmInitialization()
 {
-
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+  
+  }
+  servoArmArray[0] = ServoArmArray();
 }
 
 void Simulation::updatePlatformPosition()
