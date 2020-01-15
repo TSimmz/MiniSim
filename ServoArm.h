@@ -20,7 +20,6 @@ public:
 
 public:
   int servoID;
-  int pwm;
 
   int minPulseWidth;
   int maxPulseWidth;

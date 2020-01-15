@@ -67,5 +67,5 @@ Position Position::subPositionFromThis(Position p)
 //======================================================
 float Position::posMagnitudeSquared()
 {
-    return pow(x_coord, 2.0) + pow(y_coord, 2.0) + pow(z_coord, 2.0);
+    return sq(x_coord) + sq(y_coord) + sq(z_coord);
 }

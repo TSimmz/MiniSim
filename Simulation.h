@@ -29,8 +29,8 @@ private:
     void calculateLegLength();
     void calculateAlphaServoAngle();
 
-    Position basePosition;
-    Position platformPosition;
+    Position baseHome;
+    Position platformHome;
 
     // Servo information
     Adafruit_PWMServoDriver pwm;
@@ -43,8 +43,6 @@ private:
     // Matrices 
     Position translationalMatrix;
     float rotationalMatrix[3][3];
-
-    Position platformHome;
 };
 
 #endif

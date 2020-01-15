@@ -6,7 +6,14 @@
 #define __DEFINE_H__
 
 #include <math.h>
+#include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+
+
+//#define TRANS_DEBUG
+//#define ROT_DEBUG
+//#define ANGLE_DEBUG
+#define OUTPUT_DEBUG
 
 static const int   SERVO_NUM    = 6;
 static const int   SERVO_MIN    = 150;
