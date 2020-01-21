@@ -20,14 +20,22 @@ public:
 private:
     // Simulation Initializtion
     int servoArmInitialization();
+    void runServoTest(int servoID);
 
     // Stewart Platform calculation functions
+    void calculatePlatformPosition();
     void updatePlatformPosition();
-    void calculateTranslationalMatrix();
+    
+    
     void calculateRotationalMatrix();
+    
+    void calculateTranslationalMatrix();
     void calculatePlatformAnchor();
     void calculateLegLength();
+    
     void calculateAlphaServoAngle();
+    
+    void calculateServoPWM();
 
     Position baseHome;
     Position platformHome;

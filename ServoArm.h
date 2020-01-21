@@ -17,9 +17,13 @@ public:
 
   void calculateBaseJointPosition();
   void calculatePlatformJointPosition();
+  void calculateHomeAngle();
+  void calculateAlphaKnot();
 
 public:
   int servoID;
+
+  int currentPWM;
 
   int minPulseWidth;
   int maxPulseWidth;
@@ -27,6 +31,8 @@ public:
   int minPosition;
   int maxPosition;
 
+  float homeAngle;
+  
   float baseAngle;
   float baseDistance;
   Position baseJoint;
@@ -38,6 +44,7 @@ public:
   bool mirrorServo;
 
   float position;
+  float alphaKnot;
   float alphaAngleToHorizontal;
   float betaAngleToXAxis;
 
