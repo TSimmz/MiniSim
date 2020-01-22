@@ -19,7 +19,7 @@
   //#define Q_DEBUG
   //#define LEG_DEBUG
   #define ANGLE_DEBUG
-  #define OUTPUT_DEBUG
+  //#define OUTPUT_DEBUG
 #endif
 
 //#define TRANS_DEBUG

@@ -78,7 +78,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO1].betaAngleToXAxis = radians(120);
   servoArmArray[SERVO1].mirrorServo      = false;
 
-  runServoTest(SERVO1);
+  //runServoTest(SERVO1);
   Serial.println("Servo 1 Initialized!");
   
   servoArmArray[SERVO2].servoID          = SERVO2;
@@ -91,7 +91,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO2].betaAngleToXAxis = radians(90);
   servoArmArray[SERVO2].mirrorServo      = true;
 
-  runServoTest(SERVO2);
+  //runServoTest(SERVO2);
   Serial.println("Servo 2 Initialized!");
 
   servoArmArray[SERVO3].servoID          = SERVO3;
@@ -104,7 +104,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO3].betaAngleToXAxis = radians(-90);
   servoArmArray[SERVO3].mirrorServo      = false;
 
-  runServoTest(SERVO3);
+  //runServoTest(SERVO3);
   Serial.println("Servo 3 Initialized!");
   
   servoArmArray[SERVO4].servoID          = SERVO4;
@@ -117,7 +117,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO4].betaAngleToXAxis = radians(-120);
   servoArmArray[SERVO4].mirrorServo      = true;
 
-  runServoTest(SERVO4);
+  //runServoTest(SERVO4);
   Serial.println("Servo 4 Initialized!");
   
   servoArmArray[SERVO5].servoID          = SERVO5;
@@ -130,7 +130,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO5].betaAngleToXAxis = radians(30);
   servoArmArray[SERVO5].mirrorServo      = false;
 
-  runServoTest(SERVO5);
+  //runServoTest(SERVO5);
   Serial.println("Servo 5 Initialized!");
   
   servoArmArray[SERVO6].servoID          = SERVO6;
@@ -143,7 +143,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO6].betaAngleToXAxis = radians(-60);
   servoArmArray[SERVO6].mirrorServo      = true;
 
-  runServoTest(SERVO6);
+  //runServoTest(SERVO6);
   Serial.println("Servo 6 Initialized!");
 
   Serial.println("Calculating servo arm joint positions.."); 
@@ -341,22 +341,17 @@ void Simulation::calculateAlphaServoAngle()
   
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
-    Lprime = servoArmArray[arm].lengthOfLeg_L.posMagnitudeSquared() - (LEG_LEN *LEG_LEN + SERVO_LEN * SERVO_LEN);
+    Lprime = servoArmArray[arm].lengthOfLeg_L.posMagnitudeSquared() - (float)(LEG_LEN * LEG_LEN - SERVO_LEN * SERVO_LEN);
     Mprime = 2.0 * SERVO_LEN * (servoArmArray[arm].platformAnchorPoint_Q.z_coord - servoArmArray[arm].baseJoint.z_coord);
-    Nprime = 2.0 * SERVO_LEN * (cos(servoArmArray[arm].betaAngleToXAxis) * servoArmArray[arm].platformAnchorPoint_Q.x_coord - servoArmArray[arm].baseJoint.x_coord +
-                                sin(servoArmArray[arm].betaAngleToXAxis) * servoArmArray[arm].platformAnchorPoint_Q.y_coord - servoArmArray[arm].baseJoint.y_coord );
+    Nprime = 2.0 * SERVO_LEN * (cos(servoArmArray[arm].betaAngleToXAxis) * (servoArmArray[arm].platformAnchorPoint_Q.x_coord - servoArmArray[arm].baseJoint.x_coord) +
+                                sin(servoArmArray[arm].betaAngleToXAxis) * (servoArmArray[arm].platformAnchorPoint_Q.y_coord - servoArmArray[arm].baseJoint.y_coord) );
 
-    Aprime = asin(Lprime / static_cast<float>(sqrt(Mprime * Mprime + Nprime * Nprime))) - atan(Nprime / Mprime);
+    Aprime = asin(Lprime / (sqrt(Mprime * Mprime + Nprime * Nprime))) - atan(Nprime / Mprime);
 
     servoArmArray[arm].alphaAngleToHorizontal = Aprime;
-
-    Aprime = 0.0;
-    Lprime = 0.0;
-    Mprime = 0.0;
-    Nprime = 0.0;
     
     #ifdef ANGLE_DEBUG
-    Serial.print(degrees(servoArmArray[arm].alphaAngleToHorizontal)); Serial.print(", ");
+    Serial.print(Aprime); Serial.print(", ");
     #endif
   }
 
