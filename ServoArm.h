@@ -22,7 +22,6 @@ public:
 
 public:
   int servoID;
-
   int currentPWM;
 
   int minPulseWidth;
@@ -43,10 +42,14 @@ public:
 
   bool mirrorServo;
 
-  float position;
   float alphaKnot;
+  
   float alphaAngleToHorizontal;
   float betaAngleToXAxis;
+
+  float Lprime;
+  float Mprime;
+  float Nprime;
 
   Position platformAnchorPoint_Q;
   Position lengthOfLeg_L;

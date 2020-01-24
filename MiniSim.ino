@@ -5,9 +5,7 @@
 #include "Defines.h"
 #include "Simulation.h"
 
-#include <Wire.h>
-#include <ClickEncoder.h>
-#include <TimerOne.h>
+#define PRESSED ClickEncoder::Open
 
 #define PITCH_STICK 0
 #define ROLL_STICK  1
@@ -16,26 +14,25 @@
 Simulation sim = Simulation();
 
 ClickEncoder *encoder;
+ClickEncoder::Button button;
+
+int movementArray[6] = {0};
+int prevMovementArray[6] = {0};
+
 int16_t last, value;
 
-int pitchInput;
-int rollInput;
-int yawInput;
-
-int mappedVal;
-
-uint8_t bt;
-
+//======================================================
+// 
+//======================================================
 void timerIsr() {
   encoder->service();
 }
 
+//======================================================
+// 
+//======================================================
 void setup() 
 {
-  pitchInput = 0;
-  rollInput = 0;
-  yawInput = 0;
-
   encoder = new ClickEncoder(A1, A0, A2);
 
   Serial.begin(38400);
@@ -47,37 +44,51 @@ void setup()
   sim.init();
 }
 
+//======================================================
+// 
+//======================================================
 void loop() 
 {
-//  for (int i = 0; i < 10; i++)
-//  {
-//    pitchInput += analogRead(PITCH_STICK);  
-//  }
-//
-//  pitchInput /= 10;  
-
   value += encoder->getValue();
-  pitchInput = constrain(value, -60, 60);  
-  mappedVal = map(pitchInput, -90, 90, SERVO_MIN, SERVO_MAX);
-  
+  movementArray[YAW] = value = constrain(value, ROT_MIN, ROT_MAX);
+
   if (value != last)
   {
-    Serial.print("Rot Val: "); Serial.print(pitchInput);
-    Serial.print("  MapVal: "); Serial.println(mappedVal);
-  
+    #ifdef DEBUG
+    Serial.print("Value: "); Serial.println(movementArray[YAW]);
+    #endif
+
     last = value;
   }
-
-  ClickEncoder::Button b = encoder->getButton();
-  if (b != ClickEncoder::Open)
+  
+  button = encoder->getButton();
+  if (button != PRESSED)
   {
     value = 0;
   }
 
-  sim.run(pitchInput, rollInput, yawInput);
+  if ( prevMovementArray[SURGE] != movementArray[SURGE] ||
+       prevMovementArray[SWAY]  != movementArray[SWAY]  ||
+       prevMovementArray[HEAVE] != movementArray[HEAVE] ||
+       prevMovementArray[ROLL]  != movementArray[ROLL]  ||
+       prevMovementArray[PITCH] != movementArray[PITCH] ||
+       prevMovementArray[YAW]   != movementArray[YAW]   )
+  
+  {
+    sim.run(movementArray);
+    copyMovementPositions();
+  }
+}
 
-  #ifdef ALL_DEBUG
-  Serial.println();
-  //delay(DEFAULT_DELAY);
-  #endif
+//======================================================
+// 
+//======================================================
+void copyMovementPositions()
+{
+  prevMovementArray[SURGE] = movementArray[SURGE];
+  prevMovementArray[SWAY]  = movementArray[SWAY];
+  prevMovementArray[HEAVE] = movementArray[HEAVE];
+  prevMovementArray[ROLL]  = movementArray[ROLL];
+  prevMovementArray[PITCH] = movementArray[PITCH];
+  prevMovementArray[YAW]   = movementArray[YAW];
 }

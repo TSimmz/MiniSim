@@ -37,29 +37,21 @@ Position & Position::operator=(const Position& other)
 //======================================================
 // Adds two positions and returns the new position
 //======================================================
-Position Position::addPositionToThis(Position p)
+void Position::addPositions(Position p1, Position p2)
 {
-    Position newPos = Position();
-
-    newPos.x_coord = this->x_coord + p.x_coord;
-    newPos.y_coord = this->y_coord + p.y_coord;
-    newPos.z_coord = this->z_coord + p.z_coord;
-    
-    return newPos;
+    this->x_coord = p1.x_coord + p2.x_coord;
+    this->y_coord = p1.y_coord + p2.y_coord;
+    this->z_coord = p1.z_coord + p2.z_coord;
 }
 
 //======================================================
 // Subtracts two positions and returns the new position
 //======================================================
-Position Position::subPositionFromThis(Position p)
+void Position::subtractPositions(Position p1, Position p2)
 {
-    Position newPos = Position();
-
-    newPos.x_coord = this->x_coord - p.x_coord;
-    newPos.y_coord = this->y_coord - p.y_coord;
-    newPos.z_coord = this->z_coord - p.z_coord;
-    
-    return newPos;
+    this->x_coord = p1.x_coord - p2.x_coord;
+    this->y_coord = p1.y_coord - p2.y_coord;
+    this->z_coord = p1.z_coord - p2.z_coord;
 }
 
 //======================================================
@@ -67,5 +59,5 @@ Position Position::subPositionFromThis(Position p)
 //======================================================
 float Position::posMagnitudeSquared()
 {
-    return this->x_coord*this->x_coord + this->y_coord*this->y_coord + this->z_coord*this->z_coord;
+    return (pow(x_coord, 2.0) + pow(y_coord, 2.0) + pow(z_coord, 2.0));
 }

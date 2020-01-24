@@ -9,6 +9,10 @@
 //======================================================
 ServoArm::ServoArm()
 {
+  Lprime = 0.0;
+  Mprime = 0.0;
+  Nprime = 0.0;
+  
   baseJoint = Position();
   platformJoint = Position();
 
@@ -29,8 +33,8 @@ bool ServoArm::isMirrored()
 //======================================================
 void ServoArm::calculateBaseJointPosition()
 {
-  baseJoint.x_coord = baseDistance * cos(radians(baseAngle));
-  baseJoint.y_coord = baseDistance * sin(radians(baseAngle));
+  baseJoint.x_coord = baseDistance * sin(radians(baseAngle));
+  baseJoint.y_coord = baseDistance * cos(radians(baseAngle));
   baseJoint.z_coord = 0.0;
 }
 
@@ -39,8 +43,8 @@ void ServoArm::calculateBaseJointPosition()
 //======================================================
 void ServoArm::calculatePlatformJointPosition()
 {
-  platformJoint.x_coord = platformDistance * cos(radians(platformAngle));
-  platformJoint.y_coord = platformDistance * sin(radians(platformAngle));
+  platformJoint.x_coord = platformDistance * sin(radians(platformAngle));
+  platformJoint.y_coord = platformDistance * cos(radians(platformAngle));
   platformJoint.z_coord = 0.0;
 }
 

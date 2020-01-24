@@ -14,8 +14,8 @@ class Simulation
 public:
     Simulation();
 
-    int init();
-    int run(int pitch, int roll, int yaw);
+    void init();
+    void run(int * moveArray);
 
 private:
     // Simulation Initializtion
@@ -24,18 +24,16 @@ private:
 
     // Stewart Platform calculation functions
     void calculatePlatformPosition();
-    void updatePlatformPosition();
-    
+    void updateServoPosition();
     
     void calculateRotationalMatrix();
-    
     void calculateTranslationalMatrix();
     void calculatePlatformAnchor();
     void calculateLegLength();
-    
     void calculateAlphaServoAngle();
-    
     void calculateServoPWM();
+
+    void debugPrintOuts();
 
     Position baseHome;
     Position platformHome;

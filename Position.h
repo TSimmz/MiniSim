@@ -20,8 +20,8 @@ public:
     float y_coord;
     float z_coord;
 
-    Position addPositionToThis(Position p);
-    Position subPositionFromThis(Position p);
+    void addPositions(Position p1, Position p2);
+    void subtractPositions(Position p1, Position p2);
     
     float posMagnitudeSquared();
 };

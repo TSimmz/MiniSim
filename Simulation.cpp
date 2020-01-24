@@ -17,7 +17,7 @@ Simulation::Simulation()
 //======================================================
 // Initialize the simulation
 //======================================================
-int Simulation::init()
+void Simulation::init()
 {
   pwm.begin();
   pwm.setPWMFreq(SERVO_FREQ);  
@@ -32,33 +32,18 @@ int Simulation::init()
 //======================================================
 // Runs the simulation in a loop
 //======================================================
-int Simulation::run(int pitch, int roll, int yaw)
+void Simulation::run(int * moveArray)
 {
-  //float pitchMapped = radians(map(pitch, 0, 1023, -45, 45));
-  float pitchMapped = radians(pitch);
-
-  #ifdef ALL_DEBUG
-  Serial.print("Pitch Radians: "); Serial.println(pitchMapped);
-  #endif
-
-  //Serial.print("Pitch Deg: "); Serial.print(pitch);
-  //Serial.print(" Pitch Rad: "); Serial.println(pitchMapped);
+  requestedPlatformPosition.x_coord = moveArray[SURGE]; //platformHome.x_coord;
+  requestedPlatformPosition.y_coord = moveArray[SWAY]; //platformHome.y_coord;
+  requestedPlatformPosition.z_coord = moveArray[HEAVE]; //platformHome.z_coord;
   
-  //float rollMapped = radians(map(roll, 0, 1023, -45, 45)); 
-  //float yawMapped = radians(map(yaw, 0, 1023, -45, 45)); 
-
-  requestedPlatformPosition.x_coord = platformHome.x_coord;
-  requestedPlatformPosition.y_coord = platformHome.y_coord;
-  requestedPlatformPosition.z_coord = platformHome.z_coord + pitch;
-  
-  requestedPlatformRotation.x_coord = 0; //rollMapped;
-  requestedPlatformRotation.y_coord = 0;
-  requestedPlatformRotation.z_coord = 0; //yawMapped;
+  requestedPlatformRotation.x_coord = radians(moveArray[ROLL]); 
+  requestedPlatformRotation.y_coord = radians(moveArray[PITCH]); 
+  requestedPlatformRotation.z_coord = radians(moveArray[YAW]); 
 
   calculatePlatformPosition();
-  updatePlatformPosition();
-
-  
+  updateServoPosition();
 }
 
 //======================================================
@@ -75,10 +60,10 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO1].baseDistance     = BASE_DIST;
   servoArmArray[SERVO1].platformAngle    = 26.9;
   servoArmArray[SERVO1].platformDistance = PLAT_DIST;
-  servoArmArray[SERVO1].betaAngleToXAxis = radians(120);
+  servoArmArray[SERVO1].betaAngleToXAxis = radians(150);
   servoArmArray[SERVO1].mirrorServo      = false;
 
-  //runServoTest(SERVO1);
+  runServoTest(SERVO1);
   Serial.println("Servo 1 Initialized!");
   
   servoArmArray[SERVO2].servoID          = SERVO2;
@@ -91,7 +76,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO2].betaAngleToXAxis = radians(90);
   servoArmArray[SERVO2].mirrorServo      = true;
 
-  //runServoTest(SERVO2);
+  runServoTest(SERVO2);
   Serial.println("Servo 2 Initialized!");
 
   servoArmArray[SERVO3].servoID          = SERVO3;
@@ -104,7 +89,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO3].betaAngleToXAxis = radians(-90);
   servoArmArray[SERVO3].mirrorServo      = false;
 
-  //runServoTest(SERVO3);
+  runServoTest(SERVO3);
   Serial.println("Servo 3 Initialized!");
   
   servoArmArray[SERVO4].servoID          = SERVO4;
@@ -114,10 +99,10 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO4].baseDistance     = BASE_DIST;
   servoArmArray[SERVO4].platformAngle    = 153.1;
   servoArmArray[SERVO4].platformDistance = PLAT_DIST;
-  servoArmArray[SERVO4].betaAngleToXAxis = radians(-120);
+  servoArmArray[SERVO4].betaAngleToXAxis = radians(-150);
   servoArmArray[SERVO4].mirrorServo      = true;
 
-  //runServoTest(SERVO4);
+  runServoTest(SERVO4);
   Serial.println("Servo 4 Initialized!");
   
   servoArmArray[SERVO5].servoID          = SERVO5;
@@ -130,7 +115,7 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO5].betaAngleToXAxis = radians(30);
   servoArmArray[SERVO5].mirrorServo      = false;
 
-  //runServoTest(SERVO5);
+  runServoTest(SERVO5);
   Serial.println("Servo 5 Initialized!");
   
   servoArmArray[SERVO6].servoID          = SERVO6;
@@ -140,10 +125,10 @@ int Simulation::servoArmInitialization()
   servoArmArray[SERVO6].baseDistance     = BASE_DIST;
   servoArmArray[SERVO6].platformAngle    = 33.1;
   servoArmArray[SERVO6].platformDistance = PLAT_DIST;
-  servoArmArray[SERVO6].betaAngleToXAxis = radians(-60);
+  servoArmArray[SERVO6].betaAngleToXAxis = radians(-30);
   servoArmArray[SERVO6].mirrorServo      = true;
 
-  //runServoTest(SERVO6);
+  runServoTest(SERVO6);
   Serial.println("Servo 6 Initialized!");
 
   Serial.println("Calculating servo arm joint positions.."); 
@@ -157,6 +142,9 @@ int Simulation::servoArmInitialization()
   Serial.println("Servo Initialization Complete!");
 }
 
+//======================================================
+// 
+//======================================================
 void Simulation::runServoTest(int servoID)
 {
   pwm.setPWM(servoID, 0, SERVO_MIN);
@@ -178,10 +166,9 @@ void Simulation::calculatePlatformPosition()
   calculateAlphaServoAngle();
   calculateServoPWM();
 
-//  #ifndef ALL_DEBUG
-//  Serial.println();
-//  delay(DEFAULT_DELAY);
-//  #endif
+  #ifdef DEBUG
+  debugPrintOuts();
+  #endif
 }
 
 //======================================================
@@ -189,21 +176,7 @@ void Simulation::calculatePlatformPosition()
 //======================================================
 void Simulation::calculateTranslationalMatrix()
 {
-  translationalMatrix = requestedPlatformPosition.addPositionToThis(platformHome);
-
-  #ifdef TRANS_DEBUG
-  Serial.println("Trans Matrix------------------");
-  Serial.print("["); 
-  Serial.print(translationalMatrix.x_coord); Serial.print(", "); 
-  Serial.print(translationalMatrix.y_coord); Serial.print(", ");
-  Serial.print(translationalMatrix.z_coord); Serial.println("]");
-  
-//  #ifndef ALL_DEBUG
-//  Serial.print("\n");
-//  delay(DEFAULT_DELAY);
-//  #endif
-  
-  #endif
+  translationalMatrix.addPositions(requestedPlatformPosition, platformHome);
 }
 
 //======================================================
@@ -211,9 +184,9 @@ void Simulation::calculateTranslationalMatrix()
 //======================================================
 void Simulation::calculateRotationalMatrix()
 {
-  float psi;   // rotation about z-axis (yaw) in radians
-  float theta; // rotation about y-axis (pitch) in radians
-  float phi;   // rotation about x-axis (roll) in radians
+  float psi;   
+  float theta;
+  float phi;
 
   psi   = requestedPlatformRotation.z_coord;
   theta = requestedPlatformRotation.y_coord;
@@ -231,28 +204,6 @@ void Simulation::calculateRotationalMatrix()
   rotationalMatrix[2][0] = -1*sin(theta);
   rotationalMatrix[2][1] = cos(theta)*sin(psi);
   rotationalMatrix[2][2] = cos(theta)*cos(phi);
-
-  #ifdef ROT_DEBUG
-  Serial.println("R Matrix----------------------");
-  Serial.print("["); 
-  Serial.print(rotationalMatrix[0][0]); Serial.print(", "); 
-  Serial.print(rotationalMatrix[0][1]); Serial.print(", ");
-  Serial.print(rotationalMatrix[0][2]); Serial.println("]");
-  Serial.print("["); 
-  Serial.print(rotationalMatrix[1][0]); Serial.print(", "); 
-  Serial.print(rotationalMatrix[1][1]); Serial.print(", ");
-  Serial.print(rotationalMatrix[1][2]); Serial.println("]");
-  Serial.print("["); 
-  Serial.print(rotationalMatrix[2][0]); Serial.print(", "); 
-  Serial.print(rotationalMatrix[2][1]); Serial.print(", ");
-  Serial.print(rotationalMatrix[2][2]); Serial.println("]");
-
-//  #ifndef ALL_DEBUG
-//  Serial.print("\n");
-//  delay(DEFAULT_DELAY);
-//  #endif
- 
-  #endif
 }
 
 //======================================================
@@ -260,10 +211,6 @@ void Simulation::calculateRotationalMatrix()
 //======================================================
 void Simulation::calculatePlatformAnchor()
 {
-  #ifdef Q_DEBUG
-  Serial.println("Q Matrix----------------------");
-  #endif
-  
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
     servoArmArray[arm].platformAnchorPoint_Q.x_coord = translationalMatrix.x_coord + 
@@ -280,20 +227,7 @@ void Simulation::calculatePlatformAnchor()
         ( rotationalMatrix[2][0] * servoArmArray[arm].platformJoint.x_coord +
           rotationalMatrix[2][1] * servoArmArray[arm].platformJoint.y_coord +
           rotationalMatrix[2][2] * servoArmArray[arm].platformJoint.z_coord );
-
-    #ifdef Q_DEBUG
-    Serial.print(arm);
-    Serial.print(": ["); 
-    Serial.print(servoArmArray[arm].platformAnchorPoint_Q.x_coord); Serial.print(", "); 
-    Serial.print(servoArmArray[arm].platformAnchorPoint_Q.y_coord); Serial.print(", ");
-    Serial.print(servoArmArray[arm].platformAnchorPoint_Q.z_coord); Serial.println("]");
-    #endif
   }
-
-//  #ifndef ALL_DEBUG
-//  Serial.print("\n");
-//  delay(DEFAULT_DELAY);
-//  #endif
 }
 
 //======================================================
@@ -301,27 +235,11 @@ void Simulation::calculatePlatformAnchor()
 //======================================================
 void Simulation::calculateLegLength()
 {
-  #ifdef LEG_DEBUG
-  Serial.println("Leg Matrix--------------------");
-
-  #endif
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
-    servoArmArray[arm].lengthOfLeg_L = servoArmArray[arm].platformAnchorPoint_Q.subPositionFromThis(servoArmArray[arm].baseJoint);
-    
-    #ifdef LEG_DEBUG
-    Serial.print(arm);
-    Serial.print(": ["); 
-    Serial.print(servoArmArray[arm].lengthOfLeg_L.x_coord); Serial.print(", "); 
-    Serial.print(servoArmArray[arm].lengthOfLeg_L.y_coord); Serial.print(", ");
-    Serial.print(servoArmArray[arm].lengthOfLeg_L.z_coord); Serial.println("]");
-    #endif
+    servoArmArray[arm].lengthOfLeg_L.subtractPositions(servoArmArray[arm].platformAnchorPoint_Q, servoArmArray[arm].baseJoint);
   }
 
-//  #ifndef ALL_DEBUG
-//  Serial.println();
-//  delay(DEFAULT_DELAY);
-//  #endif
 }
 
 //======================================================
@@ -329,73 +247,162 @@ void Simulation::calculateLegLength()
 //======================================================
 void Simulation::calculateAlphaServoAngle()
 {
-  float Aprime = 0.0;
-  float Lprime = 0.0;
-  float Mprime = 0.0;
-  float Nprime = 0.0;
-
-  #ifdef ANGLE_DEBUG
-  Serial.println("Angle Matrix-----------------");
-  Serial.print("[");
-  #endif
-  
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
-    Lprime = servoArmArray[arm].lengthOfLeg_L.posMagnitudeSquared() - (float)(LEG_LEN * LEG_LEN - SERVO_LEN * SERVO_LEN);
-    Mprime = 2.0 * SERVO_LEN * (servoArmArray[arm].platformAnchorPoint_Q.z_coord - servoArmArray[arm].baseJoint.z_coord);
-    Nprime = 2.0 * SERVO_LEN * (cos(servoArmArray[arm].betaAngleToXAxis) * (servoArmArray[arm].platformAnchorPoint_Q.x_coord - servoArmArray[arm].baseJoint.x_coord) +
-                                sin(servoArmArray[arm].betaAngleToXAxis) * (servoArmArray[arm].platformAnchorPoint_Q.y_coord - servoArmArray[arm].baseJoint.y_coord) );
-
-    Aprime = asin(Lprime / (sqrt(Mprime * Mprime + Nprime * Nprime))) - atan(Nprime / Mprime);
-
-    servoArmArray[arm].alphaAngleToHorizontal = Aprime;
+    servoArmArray[arm].Lprime = 
+      ((float)pow(servoArmArray[arm].lengthOfLeg_L.x_coord, 2.0) + 
+       (float)pow(servoArmArray[arm].lengthOfLeg_L.y_coord, 2.0) + 
+       (float)pow(servoArmArray[arm].lengthOfLeg_L.z_coord, 2.0))- 
+      ((float)pow(LEG_LEN, 2.0) - (float)pow(SERVO_LEN, 2.0));
+      
+    servoArmArray[arm].Mprime = 2.0 * SERVO_LEN * (servoArmArray[arm].platformAnchorPoint_Q.z_coord - servoArmArray[arm].baseJoint.z_coord);
     
-    #ifdef ANGLE_DEBUG
-    Serial.print(Aprime); Serial.print(", ");
-    #endif
+    servoArmArray[arm].Nprime = 2.0 * SERVO_LEN  * 
+      ((cos(servoArmArray[arm].betaAngleToXAxis) * (servoArmArray[arm].platformAnchorPoint_Q.x_coord - servoArmArray[arm].baseJoint.x_coord)) +
+       (sin(servoArmArray[arm].betaAngleToXAxis) * (servoArmArray[arm].platformAnchorPoint_Q.y_coord - servoArmArray[arm].baseJoint.y_coord)));
+
+    servoArmArray[arm].alphaAngleToHorizontal =
+      asin(servoArmArray[arm].Lprime / (sqrt((servoArmArray[arm].Mprime * servoArmArray[arm].Mprime) + (servoArmArray[arm].Nprime * servoArmArray[arm].Nprime)))) - 
+      atan(servoArmArray[arm].Nprime / servoArmArray[arm].Mprime);
   }
-
-  #ifdef ANGLE_DEBUG
-  Serial.println("]");
-  #endif
-
-//  #ifndef ALL_DEBUG
-//  Serial.println();
-//  delay(DEFAULT_DELAY);
-//  #endif
 }
 
+//======================================================
+// 
+//======================================================
 void Simulation::calculateServoPWM()
 {
-  float deg_A = 0.0;
+  float angle = 0.0;
 
-  #ifdef OUTPUT_DEBUG
-  Serial.println("Output PWM----------------------");
-  Serial.print("[");
-  #endif
- 
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
-    deg_A = degrees(servoArmArray[arm].alphaAngleToHorizontal);
-    servoArmArray[arm].currentPWM = mapFloat(deg_A, ANGLE_MIN, ANGLE_MAX, SERVO_MIN, SERVO_MAX);
+    angle = degrees(servoArmArray[arm].alphaAngleToHorizontal);
 
-    #ifdef OUTPUT_DEBUG
-    Serial.print(servoArmArray[arm].currentPWM); Serial.print(", ");
-    #endif
+    if (servoArmArray[arm].isMirrored())
+    {
+      servoArmArray[arm].currentPWM = (int)map2(angle, ANGLE_MIN, ANGLE_MAX, SERVO_MAX, SERVO_MIN);
+    }
+    else
+    {
+      servoArmArray[arm].currentPWM = (int)map2(angle, ANGLE_MIN, ANGLE_MAX, SERVO_MIN, SERVO_MAX);
+    }
     
-    deg_A = 0.0;
+    angle = 0.0;
   }
-
-  #ifdef OUTPUT_DEBUG
-  Serial.println("]");
-  #endif
 }
 
-void Simulation::updatePlatformPosition()
+//======================================================
+// 
+//======================================================
+void Simulation::updateServoPosition()
 {
   for (int arm = 0; arm < SERVO_NUM; arm++)
   {
     pwm.setPWM(arm, 0, servoArmArray[arm].currentPWM);
     delay(10);    
   }
+}
+
+//======================================================
+// 
+//======================================================
+void Simulation::debugPrintOuts()
+{
+  #ifdef BASE_DEBUG
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    Serial.print("B"); Serial.print(arm); Serial.print(": ["); 
+    Serial.print(servoArmArray[arm].baseJoint.x_coord); Serial.print(", "); 
+    Serial.print(servoArmArray[arm].baseJoint.y_coord); Serial.print(", ");
+    Serial.print(servoArmArray[arm].baseJoint.z_coord); Serial.println("]");
+  }
+  Serial.println();
+  #endif
+
+  #ifdef PLAT_DEBUG
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    Serial.print("P"); Serial.print(arm); Serial.print(": ["); 
+    Serial.print(servoArmArray[arm].platformJoint.x_coord); Serial.print(", "); 
+    Serial.print(servoArmArray[arm].platformJoint.y_coord); Serial.print(", ");
+    Serial.print(servoArmArray[arm].platformJoint.z_coord); Serial.println("]");
+  }
+  Serial.println();
+  #endif
+  
+  #ifdef TRANS_DEBUG
+  Serial.print(" T: [");
+  Serial.print(translationalMatrix.x_coord); Serial.print(", "); 
+  Serial.print(translationalMatrix.y_coord); Serial.print(", ");
+  Serial.print(translationalMatrix.z_coord); Serial.println("]");
+  #endif
+  
+  #ifdef ROT_DEBUG
+  Serial.print(" R: [");
+  Serial.print(rotationalMatrix[0][0]); Serial.print(", "); 
+  Serial.print(rotationalMatrix[0][1]); Serial.print(", ");
+  Serial.print(rotationalMatrix[0][2]); Serial.print("][");
+  
+  Serial.print(rotationalMatrix[1][0]); Serial.print(", "); 
+  Serial.print(rotationalMatrix[1][1]); Serial.print(", ");
+  Serial.print(rotationalMatrix[1][2]); Serial.print("][");
+  
+  Serial.print(rotationalMatrix[2][0]); Serial.print(", "); 
+  Serial.print(rotationalMatrix[2][1]); Serial.print(", ");
+  Serial.print(rotationalMatrix[2][2]); Serial.println("]");
+  #endif
+  
+  #ifdef Q_DEBUG
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    Serial.print("Q"); Serial.print(arm); Serial.print(": ["); 
+    Serial.print(servoArmArray[arm].platformAnchorPoint_Q.x_coord); Serial.print(", "); 
+    Serial.print(servoArmArray[arm].platformAnchorPoint_Q.y_coord); Serial.print(", ");
+    Serial.print(servoArmArray[arm].platformAnchorPoint_Q.z_coord); Serial.println("]");
+  }
+  Serial.println();
+  #endif
+  
+  #ifdef LEG_DEBUG
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    Serial.print("L"); Serial.print(arm); Serial.print(": ["); 
+    Serial.print(servoArmArray[arm].lengthOfLeg_L.x_coord); Serial.print(", "); 
+    Serial.print(servoArmArray[arm].lengthOfLeg_L.y_coord); Serial.print(", ");
+    Serial.print(servoArmArray[arm].lengthOfLeg_L.z_coord); Serial.println("]");
+  }
+  Serial.println();
+  #endif
+  
+  #ifdef ANGLE_DEBUG
+  Serial.print(" A: [");
+  for (int arm = 0; arm < SERVO_NUM; arm++) {
+    Serial.print(servoArmArray[arm].alphaAngleToHorizontal); Serial.print(", ");
+  }
+  Serial.println("]");
+  
+  #endif
+
+  #ifdef A_CALC_DEBUG
+  for (int arm = 0; arm < SERVO_NUM; arm++)
+  {
+    Serial.print(arm);
+    Serial.print(": L | "); 
+    Serial.print(servoArmArray[arm].Lprime); Serial.print(", "); 
+    Serial.print("  M | ");
+    Serial.print(servoArmArray[arm].Mprime); Serial.print(", ");
+    Serial.print("  N | ");
+    Serial.print(servoArmArray[arm].Nprime); Serial.println("]");
+  }
+  Serial.println();
+  #endif
+    
+  #ifdef PWM_DEBUG
+  Serial.print(" [ ");
+  for (int arm = 0; arm < SERVO_NUM; arm++) {
+    Serial.print(servoArmArray[arm].currentPWM); Serial.print(", ");
+  }
+  Serial.println("]");
+  #endif
+
 }
