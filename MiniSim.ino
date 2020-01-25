@@ -50,12 +50,12 @@ void setup()
 void loop() 
 {
   value += encoder->getValue();
-  movementArray[YAW] = value = constrain(value, ROT_MIN, ROT_MAX);
+  movementArray[PITCH] = value = constrain(value, ROT_MIN, ROT_MAX);
 
   if (value != last)
   {
     #ifdef DEBUG
-    Serial.print("Value: "); Serial.println(movementArray[YAW]);
+    Serial.print("Value: "); Serial.println(movementArray[PITCH]);
     #endif
 
     last = value;
