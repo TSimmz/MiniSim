@@ -11,6 +11,10 @@
 #include <ClickEncoder.h>
 #include <TimerOne.h>
 
+#include <SPI.h>
+#include <Ethernet.h>
+#include <EthernetUdp.h>
+
 #define METRIC 
 #define DEBUG
 

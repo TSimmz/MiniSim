@@ -5,43 +5,46 @@
 #include "Defines.h"
 #include "Simulation.h"
 
-#define PRESSED ClickEncoder::Open
-
 #define PITCH_STICK 0
 #define ROLL_STICK  1
 #define YAW_STICK   2
 
 Simulation sim = Simulation();
 
-ClickEncoder *encoder;
-ClickEncoder::Button button;
-
 int movementArray[6] = {0};
 int prevMovementArray[6] = {0};
 
-int16_t last, value;
+byte macAddr[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+IPAddress ipAddr(192, 168, 1, 123);
+unsigned int rxPort = 1234;
+unsigned int txPort = 4321;
 
-//======================================================
-// 
-//======================================================
-void timerIsr() {
-  encoder->service();
-}
+IPAddress serverIP(127, 0, 0, 1);
+unsigned int serverPort = 9001;
+
+// buffers for receiving and sending data
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE];  // buffer to hold incoming packet,
+char ReplyBuffer[] = "acknowledged";        // a string to send back
+
+EthernetUDP Udp;
 
 //======================================================
 // 
 //======================================================
 void setup() 
 {
-  encoder = new ClickEncoder(A1, A0, A2);
-
   Serial.begin(38400);
+
+  Ethernet.begin(macAddr, serverIP);
+
+  while (!isEthernetConnected())
+  {
+    delay(1);  
+  } 
   
-  Timer1.initialize(1000);
-  Timer1.attachInterrupt(timerIsr); 
+  Serial.println("Ethernet is connected correctly..");
   
-  Serial.println("Initializing Simulator...");
-  sim.init();
+  Udp.begin(rxPort);
 }
 
 //======================================================
@@ -49,24 +52,14 @@ void setup()
 //======================================================
 void loop() 
 {
-  value += encoder->getValue();
-  movementArray[PITCH] = value = constrain(value, ROT_MIN, ROT_MAX);
+  //checkForUPD();
 
-  if (value != last)
-  {
-    #ifdef DEBUG
-    Serial.print("Value: "); Serial.println(movementArray[PITCH]);
-    #endif
+    Udp.beginPacket(serverIP, serverPort);
+    Udp.write(ReplyBuffer);
+    Udp.endPacket();
 
-    last = value;
-  }
+    delay(1000);
   
-  button = encoder->getButton();
-  if (button != PRESSED)
-  {
-    value = 0;
-  }
-
   if ( prevMovementArray[SURGE] != movementArray[SURGE] ||
        prevMovementArray[SWAY]  != movementArray[SWAY]  ||
        prevMovementArray[HEAVE] != movementArray[HEAVE] ||
@@ -91,4 +84,62 @@ void copyMovementPositions()
   prevMovementArray[ROLL]  = movementArray[ROLL];
   prevMovementArray[PITCH] = movementArray[PITCH];
   prevMovementArray[YAW]   = movementArray[YAW];
+}
+
+//======================================================
+// 
+//======================================================
+bool isEthernetConnected()
+{
+  // Check for Ethernet hardware present
+  if (Ethernet.hardwareStatus() == EthernetNoHardware)
+  {
+    Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+    return false;
+  }
+  
+  if (Ethernet.linkStatus() == LinkOFF) {
+    Serial.println("Ethernet cable is not connected.");
+    return false;
+  }
+
+  return true;
+}
+
+void checkForUPD()
+{
+  int packetSize = Udp.parsePacket();
+  
+  if (packetSize)
+  {
+    Serial.print("Packet Size: ");
+    Serial.println(packetSize);
+    
+    Serial.print("From: ");
+    IPAddress remote = Udp.remoteIP();
+    
+    for (int i=0; i < 4; i++) {
+      Serial.print(remote[i], DEC);
+      if (i < 3) {
+        Serial.print(".");
+      }
+    }
+    Serial.print(", port ");
+    Serial.println(Udp.remotePort());
+
+    // Read the packet into packetBufffer
+    Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+    Serial.println("Data:");
+    Serial.println(packetBuffer);
+
+    // Send a reply to the IP address and port that sent us the packet we received
+    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+    Udp.write(ReplyBuffer);
+    Udp.endPacket();
+  }
+//  else
+//  {
+//    Serial.println("No packets received");
+//  }
+  delay(10);
 }
