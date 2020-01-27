@@ -8,7 +8,7 @@ class Controller:
     def __init__(self):
         self.jsdev = '' 
 
-        self.control_map = {
+        self.inputKeyMap = {
             'start': False,
             'select': False,
             'x': 0.0,
@@ -16,10 +16,8 @@ class Controller:
             'ry': 0.0,
             'rx': 0.0,          
         }
-
-        self.pitch = 0.0
-        self.roll = 0.0
-        self.yaw = 0.0
+        
+        self.prevInputKeyMap = self.inputKeyMap
 
         self.axis = ''
         self.axis_map = []
@@ -52,6 +50,7 @@ class Controller:
             0x20 : 'volume',
             0x28 : 'misc',
         }
+        
         self.button = ''
         self.button_map = []
         self.button_states = {}
@@ -96,7 +95,10 @@ class Controller:
             0x2c2 : 'dpad_up',
             0x2c3 : 'dpad_down',
         }       
-
+    
+    ###########################################
+    # Controller initialization 
+    ###########################################
     def controller_init(self):
         
         # Iterate over the joystick devices.
@@ -157,7 +159,25 @@ class Controller:
         print('{} buttons found: {}'.format(num_buttons, ', '.join(self.button_map)))
         return True
         
+    ###########################################
+    # Check for input changes
+    ###########################################            
+    def isInputUpdated(self):
+        newInput = False
+        
+        for state in self.inputKeyMap:
+            if self.prevInputKeyMap[state] != self.inputKeyMap[state]:
+               self.prevInputKeyMap[state] = self.inputKeyMap[state]
+               newInput = True
+        
+        return newInput
+    
+    ###########################################
+    # Read the controller inputs 
+    ###########################################
     def read_input(self):
+        
+        change = False
         
         evbuf = self.jsdev.read(8)
         if evbuf:
@@ -166,36 +186,26 @@ class Controller:
             #if type & 0x80:
             #   print "(initial)"
 
+            # Checks the button states
             if type & 0x01:
                 self.button = self.button_map[number]
                 
                 if self.button:
                     self.button_states[self.button] = value
-                    if self.button in self.control_map:
-                        self.control_map[self.button] = value
+                    if self.button in self.inputKeyMap:
+                        self.inputKeyMap[self.button] = value
                     
-                    #if value:
-                    #   print "%s pressed" % (self.button)
-                    #else:
-                    #   print "%s released" % (self.button)
-
+            # Checks the axis states
             if type & 0x02:
                 self.axis = self.axis_map[number]
                 
                 if self.axis:
                     fvalue = value / 32767.0
                     self.axis_states[self.axis] = fvalue
-                    #print "%s: %.3f" % (self.axis, fvalue)
                     
-                    if self.axis in self.control_map:
-                        self.control_map[self.axis] = fvalue
-                    
-                    #if self.axis == 'y':
-                    #   self.pitch = fvalue
-                    #if self.axis == 'x':
-                    #   self.roll = fvalue
-                    #if self.axis == 'rx':
-                    #   self.yaw = fvalue
-
-            #return self.pitch, self.roll, self.yaw         
+                    if self.axis in self.inputKeyMap:
+                        self.inputKeyMap[self.axis] = fvalue
             
+            change = self.isInputUpdated()
+            
+            return change
