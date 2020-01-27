@@ -91,7 +91,6 @@ def recieveUPD():
     print("Starting receive UPD thread...")
     
     dataFromArduino = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #dataFromArduino.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     dataFromArduino.bind(("", SERVER_PORT))
     dataFromArduino.setblocking(0)    
     
