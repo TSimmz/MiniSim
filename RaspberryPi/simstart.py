@@ -16,7 +16,7 @@ roll  = 0.0
 pitch = 0.0
 yaw   = 0.0
 
-exit = False;
+exitThread = False;
 
 ###########################################
 # Set up UPD server
@@ -73,7 +73,7 @@ def controls(threadname):
    
     print("Starting controls thread...")
     
-    while not exit:
+    while not exitThread:
         # Read inputs from controller
         DS4.read_input()    
         
@@ -81,12 +81,13 @@ def controls(threadname):
         roll  = DS4.inputKeyMap['x']
         pitch = DS4.inputKeyMap['y']
         yaw   = DS4.inputKeyMap['rx']
+        
     
 ###########################################
 # Recieve UPD packets
 ###########################################
 def recieveUPD():
-    global exit
+    global exitThread
     
     print("Starting receive UPD thread...")
     
@@ -94,14 +95,14 @@ def recieveUPD():
     dataFromArduino.bind(("", SERVER_PORT))
     dataFromArduino.setblocking(0)    
     
-    while not exit:
+    while not exitThread:
         try:
             data,addr = dataFromArduino.recvfrom(1024) 
             dataFromArduino.sendto(str(data),addr)
         except socket.error:
             pass
 
-    time.sleep(.1)
+    time.sleep(.2)
 
 ###########################################
 # main 
@@ -115,8 +116,8 @@ def main():
     initializeController()
     
     # Setup and start the controls thread
-    controls_thread = Thread(target=controls, args=("controls_thread",))
-    controls_thread.start()
+    #controls_thread = Thread(target=controls, args=("controls_thread",))
+    #controls_thread.start()
     
     # Setup and start RX UPD thread
     updRX_thread = Thread(target=recieveUPD)
@@ -130,12 +131,13 @@ def main():
         
     while True:
         try:
-            data = raw_input("Sending: ")
-            dataToArduino.sendto(data, (SERVER_IP, SERVER_PORT))
+            data = "Hello, Arduino"
+            #print("Sending to {}:{}".format(SERVER_IP, SERVER_PORT))
+            dataToArduino.sendto(data, ARDUINO_ADDR)
             time.sleep(0.2)
             
             d, a = dataToArduino.recvfrom(1024)
-            print "Received: " + str(d)
+            print ("Received: {}".format(d))
             
             #data_in, addr = arduinoSocket.recvfrom(1024)
             #print("IP: {} Message: {}".format(addr, data))
@@ -159,7 +161,7 @@ def main():
         time.sleep(.1)
         
     # Close down threads
-    controls_thread.join()
+    #controls_thread.join()
     updRX_thread.join()
     
     print "Threads have been closed.."
