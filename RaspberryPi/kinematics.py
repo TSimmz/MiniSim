@@ -27,6 +27,12 @@ rotationalMatrix = np.zeroes((3,3))
 def mapValues( x, in_min, in_max, out_min, out_max):
     return ((x - in_min) * (out_max - out_min) + out_min * (in_max - in_min)) / (in_max - in_min)
 
+def setRequestedPlatformPosition(reqPos):
+    requestedPlatformPosition = reqPos
+
+def setRequestedPlatformRotation(reqRot):
+    requestedPlatformRotation = reqRot
+
 def calculateTranlationalMatrix():
     translationalMatrix.addLeftToRight(requestedPlatformPosition, platformHome)
 
@@ -86,13 +92,6 @@ def calculateServoPWM(legs):
        angle = math.degrees(leg.alphaAngle)
 
        if leg.isMirror():
-           leg.currentPWM = mapValue(angle, )
-        
-
-def calculatePlatformPosition():
-  calculateTranslationalMatrix()
-  calculateRotationalMatrix()
-  calculatePlatformAnchors()
-  calculateLegLengths()
-  calculateAlphaServoAngles()
-  calculateServoPWM()
+           leg.currentPWM = mapValues(angle, ANGLE_MIN, ANGLE_MAX, SERVO_MAX, SERVO_MIN)
+       else:
+           leg.currentPWM = mapValues(angle, ANGLE_MIN, ANGLE_MAX, SERVO_MIN, SERVO_MAX)
