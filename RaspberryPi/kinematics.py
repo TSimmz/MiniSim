@@ -1,16 +1,19 @@
 #!/usr/bin/env python2.7
 
 import math
+from position import Position
 from servoArm import ServoArm
 
-SERVO_MIN = 150 	# Min pulse length out of 4096
-SERVO_MAX = 600  	# Max pulse length out of 4096
-BASE_DIST = 122.1	# From center to servo pivot center
-PLAT_DIST = 140.5	# From center to joint pivot center
-SERVO_LEN = 40.0 	# Length of servo arm
-SERVO_DIST = 162.8 	# From center to servo arm pivot center
-LEG_LEN = 182.0 	# Length of leg from base to platform
-Z_HOME = 144	  	# Height of platform above base
+SERVO_MIN   = 150 	    # Min pulse length out of 4096
+SERVO_MAX   = 600  	    # Max pulse length out of 4096
+BASE_DIST   = 122.1	    # From center to servo pivot center
+PLAT_DIST   = 140.5	    # From center to joint pivot center
+SERVO_LEN   = 40.0 	    # Length of servo arm
+SERVO_DIST  = 162.8 	# From center to servo arm pivot center
+LEG_LEN     = 182.0 	# Length of leg from base to platform
+Z_HOME      = 144	  	# Height of platform above base
+ANGLE_MIN   = -90       
+ANGLE_MAX   = 90
 
 requestedPlatformPosition = Position()
 requestedPlatformRotation = Position()
@@ -21,6 +24,8 @@ platformHome = Position()
 translationalMatrix = Position()
 rotationalMatrix = np.zeroes((3,3))
 
+def mapValues( x, in_min, in_max, out_min, out_max):
+    return ((x - in_min) * (out_max - out_min) + out_min * (in_max - in_min)) / (in_max - in_min)
 
 def calculateTranlationalMatrix():
     translationalMatrix.addLeftToRight(requestedPlatformPosition, platformHome)
@@ -78,6 +83,10 @@ def calculateAlphaServoAngles(legs):
         
 def calculateServoPWM(legs):
     for leg in legs:
+       angle = math.degrees(leg.alphaAngle)
+
+       if leg.isMirror():
+           leg.currentPWM = mapValue(angle, )
         
 
 def calculatePlatformPosition():

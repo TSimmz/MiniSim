@@ -23,7 +23,7 @@ class ServoArm():
         self.platformDistance = 0.0
         self.platformJoint = Position()
 
-        self.mirror = False;
+        self.mirror = False
 
         self.alphaAngle = 0.0
         self.betaAngle = 0.0
@@ -44,3 +44,6 @@ class ServoArm():
         self.platformJoint.x_coord = self.platformDistance * math.sin(math.radians(self.platformAngle))
         self.platformJoint.y_coord = self.platformDistance * math.cos(math.radians(self.platformAngle))
         self.platformJoint.z_coord = 0.0
+
+    def isMirror():
+        return mirror

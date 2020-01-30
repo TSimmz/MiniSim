@@ -3,50 +3,41 @@ from __future__ import division
 
 import sys
 import socket
+import kinematics
+
 from serial import Serial
 from threading import Thread
 from controller import Controller
 
 import ADIHSI
+import Adafruit_PCA9685
 
 import numpy as np
 import math as mt
 
 import time
 
+SERVO1 = 0
+SERVO2 = 1
+SERVO3 = 2
+SERVO4 = 3
+SERVO5 = 4
+SERVO6 = 5
+
+servoArmList = []
+
 roll  = 0.0
 pitch = 0.0
 yaw   = 0.0
 
-exitThread = False;
-
-###########################################
-# Set up UPD server
-###########################################
-SERVER_IP    = "127.0.0.1"
-SERVER_PORT  = 9000
-SERVER_ADDR  = (SERVER_IP, SERVER_PORT)
-
-###########################################
-# Set up Arduino client
-###########################################
-ARDUINO_IP   = "192.168.0.123"
-ARDUINO_PORT = 1234
-ARDUINO_ADDR = (ARDUINO_IP, ARDUINO_PORT)
-
-###########################################
-# Set up RaspPi client
-###########################################
-RASPPI_IP    = "192.168.0.210"
-RASPPI_PORT  = 1235
-RASPPI_ADDR  = (RASPPI_IP, RASPPI_PORT)
+exitThread = False
 
 ###########################################
 # Create Controller object
 ###########################################
+PWM = Adafruit_PCA9685.PCA9685()
 DS4 = Controller()
-
-myDisplay = ADIHSI.Display()
+#myDisplay = ADIHSI.Display()
 
 ###########################################
 # Helper function to initialize controls
@@ -101,13 +92,6 @@ def main():
     #controls_thread = Thread(target=controls, args=("controls_thread",))
     #controls_thread.start()
     
-    # Setup and start RX UPD thread
-    #updRX_thread = Thread(target=recieveUPD)
-    #updRX_thread.start()
-    
-    #dataToArduino = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    #dataToArduino.setblocking(0)
-
     print("Setup complete!")
     time.sleep(1)
         
