@@ -14,13 +14,16 @@ Simulation sim = Simulation();
 int movementArray[6] = {0};
 int prevMovementArray[6] = {0};
 
-byte macAddr[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
-IPAddress ipAddr(192, 168, 1, 123);
-unsigned int rxPort = 1234;
-unsigned int txPort = 4321;
+int requestedPlatform[6] = {0};
+int calculatedServoPWM[6] = {0};
 
-IPAddress serverIP(127, 0, 0, 1);
-unsigned int serverPort = 9001;
+byte macAddr[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+IPAddress ipAddr(192, 168, 0, 123);
+unsigned int rxPort = 9000;
+unsigned int txPort = 9009;
+
+IPAddress serverIP(192,168,0,210);
+unsigned int serverPort = 9000;
 
 // buffers for receiving and sending data
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE];  // buffer to hold incoming packet,
@@ -35,16 +38,17 @@ void setup()
 {
   Serial.begin(38400);
 
-  Ethernet.begin(macAddr, serverIP);
+  Ethernet.begin(macAddr, ipAddr);
 
-  while (!isEthernetConnected())
+  if(!isEthernetConnected())
   {
-    delay(1);  
+    while (true)
+      delay(1);  
   } 
   
   Serial.println("Ethernet is connected correctly..");
   
-  Udp.begin(rxPort);
+  Udp.begin(serverPort);
 }
 
 //======================================================
@@ -54,11 +58,12 @@ void loop()
 {
   //checkForUPD();
 
-    Udp.beginPacket(serverIP, serverPort);
-    Udp.write(ReplyBuffer);
-    Udp.endPacket();
-
-    delay(1000);
+  // Send a reply to the IP address and port that sent us the packet we received
+  Udp.beginPacket(serverIP, serverPort);
+  Udp.write(ReplyBuffer);
+  Udp.endPacket();
+  
+  delay(10);
   
   if ( prevMovementArray[SURGE] != movementArray[SURGE] ||
        prevMovementArray[SWAY]  != movementArray[SWAY]  ||
@@ -106,9 +111,15 @@ bool isEthernetConnected()
   return true;
 }
 
+//======================================================
+// 
+//======================================================
 void checkForUPD()
 {
   int packetSize = Udp.parsePacket();
+  
+  Serial.print("Packet Size: ");
+  Serial.println(packetSize);
   
   if (packetSize)
   {

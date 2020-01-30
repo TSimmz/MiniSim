@@ -1,0 +1,2 @@
+8 axes found: x, y, z, rx, ry, rz, hat0x, hat0y
+13 buttons found: a, b, x, y, tl, tr, tl2, tr2, select, start, mode, thumbl, thumbr
