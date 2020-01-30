@@ -3,7 +3,7 @@ from __future__ import division
 
 import sys
 import socket
-import kinematics
+#import kinematics
 
 from serial import Serial
 from threading import Thread
@@ -86,6 +86,8 @@ def main():
     print("Starting main thread...\n...")
     print("Starting setup...\n...") 
 
+    PWM.set_pwm_freq(60)
+    
     #initializeController()
     
     # Setup and start the controls thread
