@@ -172,6 +172,7 @@ class Controller:
                 
                 if self.button:
                     self.button_states[self.button] = value
+                    print("Value: {} |\tType: {} |\tButton: {} |\t\tNumber: {}".format(value, type, self.button, number))
                     if self.button in self.inputKeyMap:
                         self.inputKeyMap[self.button] = value
                     
@@ -182,7 +183,7 @@ class Controller:
                 if self.axis:
                     fvalue = value / 32767.0
                     self.axis_states[self.axis] = fvalue
-                    
+                    print("Value: {} |\tType: {} |\tAxis: {} |\t\tNumber: {}".format(value, type, self.axis, number))
                     if self.axis in self.inputKeyMap:
                         self.inputKeyMap[self.axis] = fvalue
             
