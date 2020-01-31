@@ -4,6 +4,7 @@ from __future__ import division
 import sys
 import socket
 import kinematics
+import servoArmDefines
 
 from serial import Serial
 from threading import Thread
@@ -18,14 +19,7 @@ import math as mt
 
 import time
 
-SERVO1 = 0
-SERVO2 = 1
-SERVO3 = 2
-SERVO4 = 3
-SERVO5 = 4
-SERVO6 = 5
-
-servoArmList = []
+servoArmList = servoArmDefines.SERVO_LIST
 
 roll  = 0.0
 pitch = 0.0
@@ -34,8 +28,8 @@ yaw   = 0.0
 exitThread = False
 
 PWM = Adafruit_PCA9685.PCA9685()
-requestedPlatformPosition = Position()
-requestedPlatformRotation = Position()
+requestedPlatformPosition = Position(0.0, 0.0, 0.0)
+requestedPlatformRotation = Position(0.0, 0.0, 0.0)
 
 DS4 = Controller()
 #myDisplay = ADIHSI.Display()
@@ -69,9 +63,19 @@ def controls(threadname):
     
     while not exitThread:
         # Read inputs from controller
-        DS4.read_input()    
-
-
+        DS4.read_input()
+        
+        surge = 0.0
+        sway  = 0.0
+        heave = 0.0
+        roll  = 0.0
+        pitch = kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, -25.0, 25.0)
+        yaw   = 0.0
+        
+        requestedPlatformPosition.setNewPosition(surge, sway, heave)
+        requestedPlatformRotation.setNewPosition(roll, pitch, yaw)
+        
+        #print("Surge: {} | Sway: {} | Heave: {} | Roll: {} | Pitch: {} | Yaw: {}".format(surge, sway, heave, roll, pitch, yaw))
 
 ###########################################
 # kinematics 
@@ -97,7 +101,7 @@ def kinematicsCalc(threadname):
         kinematics.calculateServoPWM(servoArmList)
 
         for leg in servoArmList:
-            PWM.setPWM(leg.id, 0, leg.currentPWM)
+            PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
 
 
 ###########################################
@@ -105,37 +109,45 @@ def kinematicsCalc(threadname):
 #   initialize child threads
 ###########################################
 def main():
+    global exitThread
+    global requestedPlatformPosition
+    global requestedPlatformRotation
     
     print("Starting main thread...\n...")
     print("Starting setup...\n...") 
 
     PWM.set_pwm_freq(60)
     
-    #initializeController()
+    initializeController()
     
     # Setup and start the controls thread
     controls_thread = Thread(target=controls, args=("controls_thread",))
     controls_thread.start()
 
-    kinematics_thread = Thread(target=kinematicsCalc, args=("kinematics_thread",))
-    kinematics_thread.start()
+    #kinematics_thread = Thread(target=kinematicsCalc, args=("kinematics_thread",))
+    #kinematics_thread.start()
     
     print("Setup complete!")
     time.sleep(1)
         
-    while True:
-        
-        blah = raw_input("Input: ")
-        
-        #if DS4.inputKeyMap['start']:
-        #    print("Start pushed");
-                
-                   
-        #print("\rRoll: {:>6.3f} | Pitch: {:>6.3f} | Yaw:{:>6.3f}\r".format(roll, pitch, yaw))
+    while not exitThread:
+        try:
+            
+            kinematicsCalc("k")
+            time.sleep(1.0/60.0)
+            #if DS4.inputKeyMap['start']:
+            #    print("Start pushed");
+                    
+                       
+            #print("\rRoll: {:>6.3f} | Pitch: {:>6.3f} | Yaw:{:>6.3f}\r".format(roll, pitch, yaw))
+        except KeyboardInterrupt:
+            raise
+            exitThread = True
+            break
 
     # Close down threads
     controls_thread.join()
-    kinematics_thread.join()
+    #kinematics_thread.join()
     
     print("Threads have been closed..")
 

@@ -35,15 +35,15 @@ class ServoArm():
         self.platformAnchorPoint_Q = Position()
         self.legLength_L = Position()
 
-    def calculateBaseJointPosition():
+    def calculateBaseJointPosition(self):
         self.baseJoint.x_coord = self.baseDistance * math.sin(math.radians(self.baseAngle))
         self.baseJoint.y_coord = self.baseDistance * math.cos(math.radians(self.baseAngle))
         self.baseJoint.z_coord = 0.0
 
-    def calculatePlatformJointPosition():
+    def calculatePlatformJointPosition(self):
         self.platformJoint.x_coord = self.platformDistance * math.sin(math.radians(self.platformAngle))
         self.platformJoint.y_coord = self.platformDistance * math.cos(math.radians(self.platformAngle))
         self.platformJoint.z_coord = 0.0
 
-    def isMirror():
-        return mirror
+    def isMirror(self):
+        return self.mirror
