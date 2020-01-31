@@ -2,6 +2,7 @@
 
 import os, struct, array
 from fcntl import ioctl
+from keys import Keys
 
 class Controller:
     'Controller class'
@@ -158,7 +159,16 @@ class Controller:
         print('{} axes found: {}'.format(num_axes, ', '.join(self.axis_map)))
         print('{} buttons found: {}'.format(num_buttons, ', '.join(self.button_map)))
         return True
+    
+    ###########################################
+    # 
+    ###########################################            
+    def setControllerMap(self):
+        K0 = Keys('start', 0x13b)
+        K1 = Keys('select', 0x13a)
         
+
+
     ###########################################
     # Check for input changes
     ###########################################            
