@@ -3,46 +3,36 @@ from __future__ import division
 
 import sys
 import socket
+import kinematics
+import servoArmDefines
+
 from serial import Serial
 from threading import Thread
 from controller import Controller
+from position import Position
+
+import ADIHSI
+import Adafruit_PCA9685
 
 import numpy as np
 import math as mt
 
 import time
 
+servoArmList = servoArmDefines.SERVO_LIST
+
 roll  = 0.0
 pitch = 0.0
 yaw   = 0.0
 
-exit = False;
+exitThread = False
 
-###########################################
-# Set up UPD server
-###########################################
-SERVER_IP    = "127.0.0.1"
-SERVER_PORT  = 9000
-SERVER_ADDR  = (SERVER_IP, SERVER_PORT)
+PWM = Adafruit_PCA9685.PCA9685()
+requestedPlatformPosition = Position(0.0, 0.0, 0.0)
+requestedPlatformRotation = Position(0.0, 0.0, 0.0)
 
-###########################################
-# Set up Arduino client
-###########################################
-ARDUINO_IP   = "192.168.0.123"
-ARDUINO_PORT = 1234
-ARDUINO_ADDR = (ARDUINO_IP, ARDUINO_PORT)
-
-###########################################
-# Set up RaspPi client
-###########################################
-RASPPI_IP    = "192.168.0.210"
-RASPPI_PORT  = 1235
-RASPPI_ADDR  = (RASPPI_IP, RASPPI_PORT)
-
-###########################################
-# Create Controller object
-###########################################
 DS4 = Controller()
+#myDisplay = ADIHSI.Display()
 
 ###########################################
 # Helper function to initialize controls
@@ -62,108 +52,105 @@ def initializeController():
 
 ###########################################
 # controls 
-#   Retrieve pitch, roll, yaw values from 
-#   controller input
+#   Retrieve pitch, roll, yaw values from controller input
 ###########################################
 def controls(threadname):
-    global roll
-    global pitch
-    global yaw
-    global exit
-   
+    global exitThread
+    global requestedPlatformPosition
+    global requestedPlatformRotation 
+    
     print("Starting controls thread...")
     
-    while not exit:
+    MIN = -10
+    MAX = 10
+    
+    while not exitThread:
         # Read inputs from controller
-        DS4.read_input()    
+        DS4.read_input()
         
-        # Get pitch, roll, and yaw from controller          
-        roll  = DS4.inputKeyMap['x']
-        pitch = DS4.inputKeyMap['y']
-        yaw   = DS4.inputKeyMap['rx']
-    
+        surge = 0.0 #kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
+        sway  = 0.0 #kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
+        heave = 0.0 #kinematics.mapValues(DS4.inputKeyMap['ry'], -1.0, 1.0, MIN, MAX)
+        roll  = kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
+        pitch = kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
+        yaw   = kinematics.mapValues(DS4.inputKeyMap['rx'], -1.0, 1.0, MIN, MAX)
+        
+        requestedPlatformPosition.setNewPosition(surge, sway, heave)
+        requestedPlatformRotation.setNewPosition(roll, pitch, yaw)
+        
 ###########################################
-# Recieve UPD packets
+# kinematics 
 ###########################################
-def recieveUPD():
-    global exit
-    
-    print("Starting receive UPD thread...")
-    
-    dataFromArduino = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #dataFromArduino.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    dataFromArduino.bind(("", SERVER_PORT))
-    dataFromArduino.setblocking(0)    
-    
-    while not exit:
-        try:
-            data,addr = dataFromArduino.recvfrom(1024) 
-            dataFromArduino.sendto(str(data),addr)
-        except socket.error:
-            pass
+def kinematicsCalc(threadname):
+    global exitThread
+    global requestedPlatformPosition
+    global requestedPlatformRotation 
 
-    time.sleep(.1)
+    #print("Starting kinematics thread...")
+        
+    kinematics.setRequestedPlatformPosition(requestedPlatformPosition)
+    kinematics.setRequestedPlatformRotation(requestedPlatformRotation)
+    
+    #kinematics.printKinematicsPositions()
+
+    kinematics.calculateTranslationalMatrix() 
+    kinematics.calculateRotationalMatrix() 
+    kinematics.calculatePlatformAnchors(servoArmList) 
+    kinematics.calculateLegLengths(servoArmList) 
+    kinematics.calculateAlphaServoAngles(servoArmList) 
+    kinematics.calculateServoPWM(servoArmList)
+
+    for leg in servoArmList:
+        PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
+
 
 ###########################################
 # main 
 #   initialize child threads
 ###########################################
 def main():
+    global exitThread
+    global requestedPlatformPosition
+    global requestedPlatformRotation
     
     print("Starting main thread...\n...")
     print("Starting setup...\n...") 
 
+    PWM.set_pwm_freq(60)
+    
     initializeController()
     
     # Setup and start the controls thread
     controls_thread = Thread(target=controls, args=("controls_thread",))
     controls_thread.start()
-    
-    # Setup and start RX UPD thread
-    updRX_thread = Thread(target=recieveUPD)
-    updRX_thread.start()
-    
-    dataToArduino = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    dataToArduino.setblocking(0)
 
+    #kinematics_thread = Thread(target=kinematicsCalc, args=("kinematics_thread",))
+    #kinematics_thread.start()
+    
     print("Setup complete!")
     time.sleep(1)
         
-    while True:
+    while not exitThread:
         try:
-            data = raw_input("Sending: ")
-            dataToArduino.sendto(data, (SERVER_IP, SERVER_PORT))
-            time.sleep(0.2)
             
-            d, a = dataToArduino.recvfrom(1024)
-            print "Received: " + str(d)
-            
-            #data_in, addr = arduinoSocket.recvfrom(1024)
-            #print("IP: {} Message: {}".format(addr, data))
-            
+            kinematicsCalc("k")
+            #time.sleep(1.0/60.0)
             #if DS4.inputKeyMap['start']:
             #    print("Start pushed");
-                
-                   
+                    
+                       
             #print("\rRoll: {:>6.3f} | Pitch: {:>6.3f} | Yaw:{:>6.3f}\r".format(roll, pitch, yaw))
-        
-        except socket.error,msg:    
-            #If no data is received you end up here, but you can ignore
-            #the error and continue
-            pass   
-        
         except KeyboardInterrupt:
-            exit = True
-            print "Received Ctrl+C... initiating exit"
+            raise
+            exitThread = True
             break
-        
-        time.sleep(.1)
-        
+
     # Close down threads
     controls_thread.join()
-    updRX_thread.join()
+    #kinematics_thread.join()
     
-    print "Threads have been closed.."
+    print("Threads have been closed..")
+
 ###########################################
 # Execute main 
 ###########################################
