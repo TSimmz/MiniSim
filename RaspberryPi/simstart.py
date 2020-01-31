@@ -61,47 +61,47 @@ def controls(threadname):
     
     print("Starting controls thread...")
     
+    MIN = -10
+    MAX = 10
+    
     while not exitThread:
         # Read inputs from controller
         DS4.read_input()
         
-        surge = 0.0
-        sway  = 0.0
-        heave = 0.0
-        roll  = 0.0
-        pitch = kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, -25.0, 25.0)
-        yaw   = 0.0
+        surge = 0.0 #kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
+        sway  = 0.0 #kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
+        heave = 0.0 #kinematics.mapValues(DS4.inputKeyMap['ry'], -1.0, 1.0, MIN, MAX)
+        roll  = kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
+        pitch = kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
+        yaw   = kinematics.mapValues(DS4.inputKeyMap['rx'], -1.0, 1.0, MIN, MAX)
         
         requestedPlatformPosition.setNewPosition(surge, sway, heave)
         requestedPlatformRotation.setNewPosition(roll, pitch, yaw)
         
-        #print("Surge: {} | Sway: {} | Heave: {} | Roll: {} | Pitch: {} | Yaw: {}".format(surge, sway, heave, roll, pitch, yaw))
-
 ###########################################
 # kinematics 
-#   
 ###########################################
 def kinematicsCalc(threadname):
     global exitThread
     global requestedPlatformPosition
     global requestedPlatformRotation 
 
-    print("Starting kinematics thread...")
-
-    while not exitThread:
+    #print("Starting kinematics thread...")
         
-        kinematics.setRequestedPlatformPosition(requestedPlatformPosition)
-        kinematics.setRequestedPlatformRotation(requestedPlatformRotation)
+    kinematics.setRequestedPlatformPosition(requestedPlatformPosition)
+    kinematics.setRequestedPlatformRotation(requestedPlatformRotation)
+    
+    #kinematics.printKinematicsPositions()
 
-        kinematics.calculateTranslationalMatrix() 
-        kinematics.calculateRotationalMatrix() 
-        kinematics.calculatePlatformAnchors(servoArmList) 
-        kinematics.calculateLegLengths(servoArmList) 
-        kinematics.calculateAlphaServoAngles(servoArmList) 
-        kinematics.calculateServoPWM(servoArmList)
+    kinematics.calculateTranslationalMatrix() 
+    kinematics.calculateRotationalMatrix() 
+    kinematics.calculatePlatformAnchors(servoArmList) 
+    kinematics.calculateLegLengths(servoArmList) 
+    kinematics.calculateAlphaServoAngles(servoArmList) 
+    kinematics.calculateServoPWM(servoArmList)
 
-        for leg in servoArmList:
-            PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
+    for leg in servoArmList:
+        PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
 
 
 ###########################################
@@ -134,7 +134,7 @@ def main():
         try:
             
             kinematicsCalc("k")
-            time.sleep(1.0/60.0)
+            #time.sleep(1.0/60.0)
             #if DS4.inputKeyMap['start']:
             #    print("Start pushed");
                     

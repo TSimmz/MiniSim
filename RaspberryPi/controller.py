@@ -206,6 +206,6 @@ class Controller:
                     if self.axis in self.inputKeyMap:
                         self.inputKeyMap[self.axis] = fvalue
             
-            change = self.isInputUpdated()
+            #change = self.isInputUpdated()
             
             return change

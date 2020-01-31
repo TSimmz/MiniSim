@@ -16,8 +16,8 @@ Z_HOME      = 144       # Height of platform above base
 ANGLE_MIN   = -90       
 ANGLE_MAX   = 90
 
-requestedPlatformPosition = Position()
-requestedPlatformRotation = Position()
+requestedPlatformPosition = Position(0.0, 0.0, 0.0)
+requestedPlatformRotation = Position(0.0, 0.0, 0.0)
 
 baseHome = Position(0.0, 0.0, 0.0)
 platformHome = Position(0.0, 0.0, Z_HOME)
@@ -29,13 +29,22 @@ def mapValues( x, in_min, in_max, out_min, out_max):
     return ((x - in_min) * (out_max - out_min) + out_min * (in_max - in_min)) / (in_max - in_min)
 
 def setRequestedPlatformPosition(reqPos):
-    requestedPlatformPosition = reqPos
+    requestedPlatformPosition.setNewPosition(reqPos.x_coord, reqPos.y_coord, reqPos.z_coord)
 
 def setRequestedPlatformRotation(reqRot):
-    requestedPlatformRotation = reqRot
+    requestedPlatformRotation.setNewPosition(reqRot.x_coord, reqRot.y_coord, reqRot.z_coord)
 
 def calculateTranslationalMatrix():
     translationalMatrix.addLeftToRight(requestedPlatformPosition, platformHome)
+
+def printKinematicsPositions():
+    surge = requestedPlatformPosition.x_coord
+    sway  = requestedPlatformPosition.y_coord
+    heave = requestedPlatformPosition.z_coord
+    roll  = requestedPlatformRotation.x_coord
+    pitch = requestedPlatformRotation.y_coord
+    yaw   = requestedPlatformRotation.z_coord
+    print("[{}, {}, {}, {}, {}, {}]".format(surge, sway, heave, roll, pitch, yaw))
 
 def calculateRotationalMatrix():
 
@@ -43,7 +52,7 @@ def calculateRotationalMatrix():
     theta = math.radians(requestedPlatformRotation.y_coord)
     psi   = math.radians(requestedPlatformRotation.z_coord)
 
-    #print("\n\nX: {} | Y: {} | Z: {}\n\n".format(phi, theta, psi))
+    #print("X: {} | Y: {} | Z: {}".format(requestedPlatformRotation.x_coord, requestedPlatformRotation.y_coord, requestedPlatformRotation.z_coord))
           
     rotationalMatrix[0][0] = math.cos(psi)*math.cos(theta)
     rotationalMatrix[0][1] = -math.sin(psi)*math.cos(phi)+math.cos(psi)*math.sin(theta)*math.sin(phi)
