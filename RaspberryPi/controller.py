@@ -18,6 +18,8 @@ class Controller:
             'rx': 0.0,          
         }
         
+        self.keyMap = []
+
         self.prevInputKeyMap = self.inputKeyMap
 
         self.axis = ''
@@ -164,10 +166,20 @@ class Controller:
     # 
     ###########################################            
     def setControllerMap(self):
-        K0 = Keys('start', 0x13b)
-        K1 = Keys('select', 0x13a)
-        
-
+        self.keyMap.append(Keys('reset',     0x13b))
+        self.keyMap.append(Keys('autopilot', 0x13a))
+        self.keyMap.append(Keys('surgePos',  0x220))
+        self.keyMap.append(Keys('surgeNeg',  0x221))
+        self.keyMap.append(Keys('swayPos',   0x222))
+        self.keyMap.append(Keys('swayNeg',   0x223))
+        self.keyMap.append(Keys('changeAP',  0x121))
+        self.keyMap.append(Keys('freeze',    0x122))
+        self.keyMap.append(Keys('pitch',     0x01))
+        self.keyMap.append(Keys('roll',      0x00))
+        self.keyMap.append(Keys('heave',     0x04))
+        self.keyMap.append(Keys('yaw',       0x03))
+        self.keyMap.append(Keys('throttle',  0x02))
+        self.keyMap.append(Keys('brake',     0x05))
 
     ###########################################
     # Check for input changes
