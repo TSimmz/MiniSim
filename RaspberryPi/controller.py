@@ -8,20 +8,31 @@ class Controller:
     'Controller class'
     def __init__(self):
         self.jsdev = '' 
-
+        
         self.inputKeyMap = {
-            'start': False,
-            'sel': False,
+           'start': False,
+            'sel' : False, 
+            'ps'  : False,
+            'x'   : False,
+            'c'   : False,
+            't'   : False,
+            's'   : False,
+            'lt1' : False,
+            'lt2' : False,
+            'l3'  : False,
+            'rt1' : False,
+            'rt2' : False,
+            'r3'  : False,
+            'l2'  : 0.0,
+            'r2'  : 0.0,
             'lt_y': 0.0,
             'lt_x': 0.0,
             'rt_y': 0.0,
-            'rt_x': 0.0,          
+            'rt_x': 0.0,
+            'dpad_y': 0.0,
+            'dpad_x': 0.0,           
         }
-        
-        self.keyMap = []
-
-        self.prevInputKeyMap = self.inputKeyMap
-
+                
         self.axis = ''
         self.axis_map = []
         self.axis_states = {}
@@ -44,7 +55,6 @@ class Controller:
             0x131 : 'c',
             0x133 : 't',
             0x134 : 's',
-            0x135 : 'z',
             0x136 : 'lt1',
             0x137 : 'rt1',
             0x138 : 'lt2',
@@ -54,7 +64,6 @@ class Controller:
             0x13c : 'ps',
             0x13d : 'l3',
             0x13e : 'r3',
-            0x2c3 : 'dpad_down',
         }       
     
     ###########################################
@@ -119,52 +128,15 @@ class Controller:
         print('{} axes found: {}'.format(num_axes, ', '.join(self.axis_map)))
         print('{} buttons found: {}'.format(num_buttons, ', '.join(self.button_map)))
         return True
-    
-    ###########################################
-    # 
-    ###########################################            
-    def setControllerMap(self):
-        self.keyMap.append(Keys('reset',     0x13b)) #
-        self.keyMap.append(Keys('autopilot', 0x13a))
-        self.keyMap.append(Keys('surgePos',  0x220))
-        self.keyMap.append(Keys('surgeNeg',  0x221))
-        self.keyMap.append(Keys('swayPos',   0x222))
-        self.keyMap.append(Keys('swayNeg',   0x223))
-        self.keyMap.append(Keys('changeAP',  0x121))
-        self.keyMap.append(Keys('freeze',    0x122))
-        self.keyMap.append(Keys('pitch',     0x01))
-        self.keyMap.append(Keys('roll',      0x00))
-        self.keyMap.append(Keys('heave',     0x04))
-        self.keyMap.append(Keys('yaw',       0x03))
-        self.keyMap.append(Keys('throttle',  0x02))
-        self.keyMap.append(Keys('brake',     0x05))
 
-    ###########################################
-    # Check for input changes
-    ###########################################            
-    def isInputUpdated(self):
-        newInput = False
-        
-        for state in self.inputKeyMap:
-            if self.prevInputKeyMap[state] != self.inputKeyMap[state]:
-               self.prevInputKeyMap[state] = self.inputKeyMap[state]
-               newInput = True
-        
-        return newInput
-    
     ###########################################
     # Read the controller inputs 
     ###########################################
     def read_input(self):
-        
-        change = False
-        
+
         evbuf = self.jsdev.read(8)
         if evbuf:
             time, value, type, number = struct.unpack('IhBB', evbuf)
-
-            #if type & 0x80:
-            #   print "(initial)"
 
             # Checks the button states
             if type & 0x01:
@@ -172,7 +144,8 @@ class Controller:
                 
                 if self.button:
                     self.button_states[self.button] = value
-                    print("Value: {} |\tType: {} |\tButton: {} |\t\tNumber: {}".format(value, type, self.button, number))
+                    
+                    #print("Value: {} |\tType: {} |\tButton: {} |\t\tNumber: {}".format(value, type, self.button, number))
                     if self.button in self.inputKeyMap:
                         self.inputKeyMap[self.button] = value
                     
@@ -183,10 +156,7 @@ class Controller:
                 if self.axis:
                     fvalue = value / 32767.0
                     self.axis_states[self.axis] = fvalue
-                    print("Value: {} |\tType: {} |\tAxis: {} |\t\tNumber: {}".format(value, type, self.axis, number))
+                    
+                    #print("Value: {} |\tType: {} |\tAxis: {} |\t\tNumber: {}".format(value, type, self.axis, number))
                     if self.axis in self.inputKeyMap:
                         self.inputKeyMap[self.axis] = fvalue
-            
-            #change = self.isInputUpdated()
-            
-            return change

@@ -6,10 +6,12 @@ import socket
 import kinematics
 import servoArmDefines
 
+from enum import IntEnum
 from serial import Serial
 from threading import Thread
 from controller import Controller
 from position import Position
+from keys import Keys
 
 import ADIHSI
 import Adafruit_PCA9685
@@ -20,11 +22,23 @@ import math as mt
 import time
 
 servoArmList = servoArmDefines.SERVO_LIST
+keyMap = []
 
-roll  = 0.0
-pitch = 0.0
-yaw   = 0.0
-
+class KEY(IntEnum):
+    Surge  = 0
+    Sway   = 1
+    Heave  = 2
+    Roll   = 3
+    Pitch  = 4
+    Yaw    = 5
+    SetAP  = 6
+    NewAP  = 7
+    Freeze = 8
+    Reset  = 9
+    Start  = 10
+    Brake  = 11
+    Throttle = 12
+        
 exitThread = False
 
 PWM = Adafruit_PCA9685.PCA9685()
@@ -50,12 +64,18 @@ def initializeController():
         time.sleep(1)
         sys.exit("Exiting...")
 
+def initializeKeyMap():
+    for i in range(21):
+        newKey = Keys()
+        keyMap.append(newKey)
+    
 ###########################################
 # controls 
 #   Retrieve pitch, roll, yaw values from controller input
 ###########################################
 def controls(threadname):
     global exitThread
+    global keyMap
     global requestedPlatformPosition
     global requestedPlatformRotation 
     
@@ -68,15 +88,29 @@ def controls(threadname):
         # Read inputs from controller
         DS4.read_input()
         
-        surge = 0.0 #kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
-        sway  = 0.0 #kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
-        heave = 0.0 #kinematics.mapValues(DS4.inputKeyMap['ry'], -1.0, 1.0, MIN, MAX)
-        roll  = kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
-        pitch = kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
-        yaw   = kinematics.mapValues(DS4.inputKeyMap['rx'], -1.0, 1.0, MIN, MAX)
+        keyMap[KEY.Start].setKeyState(DS4.inputKeyMap['start'])
+        keyMap[KEY.Reset].setKeyState(DS4.inputKeyMap['ps'])
+        keyMap[KEY.NewAP].setKeyState(DS4.inputKeyMap['sel'])
+        keyMap[KEY.SetAP].setKeyState(DS4.inputKeyMap['l3'])
+        keyMap[KEY.Freeze].setKeyState(DS4.inputKeyMap['r3'])
+        keyMap[KEY.Surge].setAxis(DS4.inputKeyMap['dpad_y'])
+        keyMap[KEY.Sway].setAxis(DS4.inputKeyMap['dpad_x'])
+        keyMap[KEY.Heave].setAxis(DS4.inputKeyMap['rt_y'])
+        keyMap[KEY.Roll].setAxis(DS4.inputKeyMap['lt_x'])
+        keyMap[KEY.Pitch].setAxis(DS4.inputKeyMap['lt_y'])
+        keyMap[KEY.Yaw].setAxis(DS4.inputKeyMap['rt_x'])
+        keyMap[KEY.Throttle].setAxis(DS4.inputKeyMap['r2'])
+        keyMap[KEY.Brake].setAxis(DS4.inputKeyMap['l2'])
         
-        requestedPlatformPosition.setNewPosition(surge, sway, heave)
-        requestedPlatformRotation.setNewPosition(roll, pitch, yaw)
+#         surge = 0.0 #kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
+#         sway  = 0.0 #kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
+#         heave = 0.0 #kinematics.mapValues(DS4.inputKeyMap['ry'], -1.0, 1.0, MIN, MAX)
+#         roll  = kinematics.mapValues(DS4.inputKeyMap['lt_x'], -1.0, 1.0, MIN, MAX)
+#         pitch = kinematics.mapValues(DS4.inputKeyMap['lt_y'], -1.0, 1.0, MIN, MAX)
+#         yaw   = kinematics.mapValues(DS4.inputKeyMap['rt_y'], -1.0, 1.0, MIN, MAX)
+        
+#        requestedPlatformPosition.setNewPosition(surge, sway, heave)
+#        requestedPlatformRotation.setNewPosition(roll, pitch, yaw)
         
 ###########################################
 # kinematics 
@@ -103,6 +137,9 @@ def kinematicsCalc(threadname):
     for leg in servoArmList:
         PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
 
+#def handleInputs():
+    
+    
 
 ###########################################
 # main 
@@ -119,6 +156,7 @@ def main():
     PWM.set_pwm_freq(60)
     
     initializeController()
+    initializeKeyMap()
     
     # Setup and start the controls thread
     controls_thread = Thread(target=controls, args=("controls_thread",))
