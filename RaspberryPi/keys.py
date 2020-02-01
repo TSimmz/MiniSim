@@ -23,16 +23,22 @@ class Keys:
         
         if self.value and not self.prevVal:
             self.press = True
+            self.hold  = False
+            self.release = False
         
         if self.value and self.prevVal:
             self.press = False
             self.hold  = True
+            self.release = False
             
         if not self.value and self.prevVal:
+            self.press = False
             self.hold = False
             self.release = True
         
         if not self.value and not self.prevVal:
+            self.press = False
+            self.hold = False
             self.release = False
             
         self.prevVal = self.value
@@ -44,6 +50,6 @@ class Keys:
         return self.hold
     
     def isReleased(self):
-        return self.released
+        return self.release
         
     

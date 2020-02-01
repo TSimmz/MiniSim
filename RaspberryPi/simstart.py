@@ -102,6 +102,15 @@ def controls(threadname):
         keyMap[KEY.Throttle].setAxis(DS4.inputKeyMap['r2'])
         keyMap[KEY.Brake].setAxis(DS4.inputKeyMap['l2'])
         
+#         if keyMap[KEY.Start].isPressed():
+#          print("Start Press")
+#         
+#         if keyMap[KEY.Start].isHeld():
+#          print("Start Held")
+#         
+#         if keyMap[KEY.Start].isReleased():
+#          print("Start Release")
+        
 #         surge = 0.0 #kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
 #         sway  = 0.0 #kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
 #         heave = 0.0 #kinematics.mapValues(DS4.inputKeyMap['ry'], -1.0, 1.0, MIN, MAX)
