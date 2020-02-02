@@ -13,6 +13,11 @@ class Position():
         self.x_coord = x
         self.y_coord = y
         self.z_coord = z
+
+    def copyNewPosition(self, other):
+        self.x_coord = other.x_coord
+        self.y_coord = other.y_coord
+        self.z_coord = other.z_coord
     
     def addLeftToRight(self, p1, p2):
         self.x_coord = p1.x_coord + p2.x_coord

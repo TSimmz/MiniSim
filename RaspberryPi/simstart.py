@@ -38,10 +38,33 @@ class KEY(IntEnum):
     Start  = 10
     Brake  = 11
     Throttle = 12
-        
+
+class AP(IntEnum):
+    CircleCW  = 0
+    CircleCCW = 1
+    SineWave  = 2
+    Square    = 3
+    Count     = 4
+
+
 exitThread = False
 
 Motion = False
+AutoPilot = False
+Frozen = False
+AP_Routine = AP.CircleCW
+
+reqPosition = Position(0.0, 0.0, 0.0)
+reqRotation = Position(0.0, 0.0, 0.0)
+
+zeroPosition = Position(0.0, 0.0, 0.0)
+zeroRotation = Position(0.0, 0.0, 0.0)
+
+ctrlPosition = Position(0.0, 0.0, 0.0)
+ctrlRotation = Position(0.0, 0.0, 0.0)
+
+autoPosition = Position(0.0, 0.0, 0.0)
+autoRotation = Position(0.0, 0.0, 0.0)
 
 frozenPosition = Position(0.0, 0.0, 0.0)
 frozenRotation = Position(0.0, 0.0, 0.0)
@@ -67,6 +90,9 @@ def initializeController():
         time.sleep(1)
         sys.exit("Exiting...")
 
+###########################################
+# 
+###########################################
 def initializeKeyMap():
     for i in range(21):
         newKey = Keys()
@@ -107,14 +133,10 @@ def controls(threadname):
 ###########################################
 # kinematics 
 ###########################################
-def kinematicsCalc(threadname):
-    global exitThread
+def kinematicsCalc():
 
-    #print("Starting kinematics thread...")
-        
-    kinematics.setRequestedPlatformPosition(requestedPlatformPosition)
-    kinematics.setRequestedPlatformRotation(requestedPlatformRotation)
-
+    kinematics.setRequestedPlatformPosition(reqPosition)
+    kinematics.setRequestedPlatformRotation(reqRotation)
     kinematics.calculateTranslationalMatrix() 
     kinematics.calculateRotationalMatrix() 
     kinematics.calculatePlatformAnchors(servoArmList) 
@@ -125,14 +147,66 @@ def kinematicsCalc(threadname):
     for leg in servoArmList:
         PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
 
+###########################################
+# handles the button presses from DS4
+###########################################
 def handleButtons():
     
     if keyMap[KEY.Start].isPressed():
         Motion = not Motion
         
-    if keyMap[KEY.Freeze].isPressed():
-        
+    if keyMap[KEY.SetAP].isPressed():
+        AutoPilot = not AutoPilot
+
+    if keyMap[KEY.NewAP].isPressed():
+        AP_Routine = (AP_Routine + 1) % AP.Count
     
+    if keyMap[KEY.Reset].isPressed():
+        Motion = False
+    
+    if keyMap[KEY.Freeze].isPressed():
+        Frozen = not Frozen
+
+        if Frozen:
+            frozenPosition.copyNewPosition(reqPosition)
+            frozenPosition.copyNewPosition(reqRotation)
+
+
+###########################################
+# handles the axes changes from DS4
+###########################################
+def handleAxes():
+
+    surge = surge + keyMap[KEY.Surge].axis
+    sway = sway + keyMap[KEY.Sway].axis
+    heave = keyMap[KEY.Heave].axis
+    roll = keyMap[KEY.Roll].axis
+    pitch = keyMap[KEY.Pitch].axis
+    yaw = keyMap[KEY.Yaw].axis  
+         
+    ctrlPosition.setNewPosition(surge, sway, heave)
+    ctrlRotation.setNewPosition(roll, pitch, yaw)
+
+###########################################
+# 
+###########################################
+def updatePositionRotation():
+
+    if not Motion:
+        reqPosition.copyNewPosition(zeroPosition)
+        reqRotation.copyNewPosition(zeroRotation)
+
+    elif Frozen:
+        reqPosition.copyNewPosition(frozenPosition)
+        reqRotation.copyNewPosition(frozenRotation)
+    
+    elif AutoPilot:
+        reqPosition.copyNewPosition(autoPosition)
+        reqRotation.copyNewPosition(autoRotation)
+    
+    else:
+        reqPosition.copyNewPosition(ctrlPosition)
+        reqRotation.copyNewPosition(ctrlRotation)
 
 ###########################################
 # main 
@@ -153,20 +227,17 @@ def main():
     controls_thread = Thread(target=controls, args=("controls_thread",))
     controls_thread.start()
 
-    #kinematics_thread = Thread(target=kinematicsCalc, args=("kinematics_thread",))
-    #kinematics_thread.start()
-    
     print("Setup complete!")
     time.sleep(1)
         
     while not exitThread:
         try:
-            
-            kinematicsCalc("k")
-            #time.sleep(1.0/60.0)
-            #if DS4.inputKeyMap['start']:
-            #    print("Start pushed");
-                    
+
+            handleButtons()
+            handleAxes()                    
+            updatePositionRotation()
+
+            kinematicsCalc()
                        
             #print("\rRoll: {:>6.3f} | Pitch: {:>6.3f} | Yaw:{:>6.3f}\r".format(roll, pitch, yaw))
         except KeyboardInterrupt:
