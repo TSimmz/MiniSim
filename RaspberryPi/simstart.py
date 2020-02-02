@@ -89,6 +89,8 @@ def initializeController():
         print("############################################\n")
         time.sleep(1)
         sys.exit("Exiting...")
+    
+    print("############################################")
 
 ###########################################
 # 
@@ -176,9 +178,9 @@ def handleButtons():
 # handles the axes changes from DS4
 ###########################################
 def handleAxes():
-
-    surge = surge + keyMap[KEY.Surge].axis
-    sway = sway + keyMap[KEY.Sway].axis
+    
+    surge = ctrlPosition.x_coord + keyMap[KEY.Surge].axis
+    sway = ctrlPosition.y_coord + keyMap[KEY.Sway].axis
     heave = keyMap[KEY.Heave].axis
     roll = keyMap[KEY.Roll].axis
     pitch = keyMap[KEY.Pitch].axis
