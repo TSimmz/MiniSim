@@ -41,11 +41,14 @@ class KEY(IntEnum):
         
 exitThread = False
 
-PWM = Adafruit_PCA9685.PCA9685()
-requestedPlatformPosition = Position(0.0, 0.0, 0.0)
-requestedPlatformRotation = Position(0.0, 0.0, 0.0)
+Motion = False
 
+frozenPosition = Position(0.0, 0.0, 0.0)
+frozenRotation = Position(0.0, 0.0, 0.0)
+
+PWM = Adafruit_PCA9685.PCA9685()
 DS4 = Controller()
+
 #myDisplay = ADIHSI.Display()
 
 ###########################################
@@ -76,8 +79,6 @@ def initializeKeyMap():
 def controls(threadname):
     global exitThread
     global keyMap
-    global requestedPlatformPosition
-    global requestedPlatformRotation 
     
     print("Starting controls thread...")
     
@@ -102,39 +103,17 @@ def controls(threadname):
         keyMap[KEY.Throttle].setAxis(DS4.inputKeyMap['r2'])
         keyMap[KEY.Brake].setAxis(DS4.inputKeyMap['l2'])
         
-#         if keyMap[KEY.Start].isPressed():
-#          print("Start Press")
-#         
-#         if keyMap[KEY.Start].isHeld():
-#          print("Start Held")
-#         
-#         if keyMap[KEY.Start].isReleased():
-#          print("Start Release")
-        
-#         surge = 0.0 #kinematics.mapValues(DS4.inputKeyMap['y'], -1.0, 1.0, MIN, MAX)
-#         sway  = 0.0 #kinematics.mapValues(DS4.inputKeyMap['x'], -1.0, 1.0, MIN, MAX)
-#         heave = 0.0 #kinematics.mapValues(DS4.inputKeyMap['ry'], -1.0, 1.0, MIN, MAX)
-#         roll  = kinematics.mapValues(DS4.inputKeyMap['lt_x'], -1.0, 1.0, MIN, MAX)
-#         pitch = kinematics.mapValues(DS4.inputKeyMap['lt_y'], -1.0, 1.0, MIN, MAX)
-#         yaw   = kinematics.mapValues(DS4.inputKeyMap['rt_y'], -1.0, 1.0, MIN, MAX)
-        
-#        requestedPlatformPosition.setNewPosition(surge, sway, heave)
-#        requestedPlatformRotation.setNewPosition(roll, pitch, yaw)
         
 ###########################################
 # kinematics 
 ###########################################
 def kinematicsCalc(threadname):
     global exitThread
-    global requestedPlatformPosition
-    global requestedPlatformRotation 
 
     #print("Starting kinematics thread...")
         
     kinematics.setRequestedPlatformPosition(requestedPlatformPosition)
     kinematics.setRequestedPlatformRotation(requestedPlatformRotation)
-    
-    #kinematics.printKinematicsPositions()
 
     kinematics.calculateTranslationalMatrix() 
     kinematics.calculateRotationalMatrix() 
@@ -146,8 +125,13 @@ def kinematicsCalc(threadname):
     for leg in servoArmList:
         PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
 
-#def handleInputs():
+def handleButtons():
     
+    if keyMap[KEY.Start].isPressed():
+        Motion = not Motion
+        
+    if keyMap[KEY.Freeze].isPressed():
+        
     
 
 ###########################################
@@ -156,8 +140,6 @@ def kinematicsCalc(threadname):
 ###########################################
 def main():
     global exitThread
-    global requestedPlatformPosition
-    global requestedPlatformRotation
     
     print("Starting main thread...\n...")
     print("Starting setup...\n...") 
