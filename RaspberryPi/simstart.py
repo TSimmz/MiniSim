@@ -4,7 +4,7 @@ from __future__ import division
 import sys
 import socket
 import kinematics
-#import autopilot
+import autopilot
 import servoArmDefines
 
 from enum import IntEnum
@@ -142,6 +142,10 @@ def kinematicsCalc():
 # handles the button presses from DS4
 ###########################################
 def handleButtons():
+    global Motion
+    global Frozen
+    global AutoPilot
+    global AP_Routine
     
     if keyMap[KEY.Start].isPressed():
         Motion = not Motion
@@ -172,11 +176,11 @@ def handleButtons():
 def handleAxes():
     
     surge = ctrlPosition.x_coord + keyMap[KEY.Surge].axis
-    sway = ctrlPosition.y_coord + keyMap[KEY.Sway].axis
-    heave = keyMap[KEY.Heave].axis
-    roll = keyMap[KEY.Roll].axis
-    pitch = keyMap[KEY.Pitch].axis
-    yaw = keyMap[KEY.Yaw].axis  
+    sway  = ctrlPosition.y_coord + keyMap[KEY.Sway].axis
+    heave = kinematics.mapValues(keyMap[KEY.Heave].axis, -1.0, 1.0, -10.0, 10.0)
+    roll  = kinematics.mapValues(keyMap[KEY.Roll].axis , -1.0, 1.0, -10.0, 10.0)
+    pitch = kinematics.mapValues(keyMap[KEY.Pitch].axis, -1.0, 1.0, -10.0, 10.0)
+    yaw   = kinematics.mapValues(keyMap[KEY.Yaw].axis  , -1.0, 1.0, -10.0, 10.0) 
          
     ctrlPosition.setNewPosition(surge, sway, heave)
     ctrlRotation.setNewPosition(roll, pitch, yaw)
@@ -185,22 +189,29 @@ def handleAxes():
 # 
 ###########################################
 def updatePositionRotation():
+    global Motion
+    global Frozen
+    global AutoPilot
 
     if not Motion:
         reqPosition.copyNewPosition(zeroPosition)
         reqRotation.copyNewPosition(zeroRotation)
+        print("Zero Position")
 
     elif Frozen:
         reqPosition.copyNewPosition(frozenPosition)
         reqRotation.copyNewPosition(frozenRotation)
+        print("Frozen Position")
     
     elif AutoPilot:
         reqPosition.copyNewPosition(autoPosition)
         reqRotation.copyNewPosition(autoRotation)
+        print("AutoPilot Position")
     
     else:
         reqPosition.copyNewPosition(ctrlPosition)
         reqRotation.copyNewPosition(ctrlRotation)
+        print("Controller Position")
 
 ###########################################
 # main 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.7
 
 import math
+from enum import IntEnum
 
 class Function(IntEnum):
     CircleCW  = 0
