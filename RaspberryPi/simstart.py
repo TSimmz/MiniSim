@@ -126,8 +126,6 @@ def controls(threadname):
 ###########################################
 def kinematicsCalc():
 
-    kinematics.setRequestedPlatformPosition(reqPosition)
-    kinematics.setRequestedPlatformRotation(reqRotation)
     kinematics.calculateTranslationalMatrix() 
     kinematics.calculateRotationalMatrix() 
     kinematics.calculatePlatformAnchors(servoArmList) 
@@ -149,21 +147,27 @@ def handleButtons():
     
     if keyMap[KEY.Start].isPressed():
         Motion = not Motion
+        print("Start pressed : Motion is {}".format(Motion))
         
     if keyMap[KEY.SetAP].isPressed():
         AutoPilot = not AutoPilot
+        print("R3 pressed : AutoPilot is {}".format(AutoPilot))
 
         if AutoPilot:
             autopilot.chooseAP(AP_Routine)
 
     if keyMap[KEY.NewAP].isPressed():
         AP_Routine = (AP_Routine + 1) % AP.Count
+        
+        print("Select pressed : AP Count is {}".format(AP_Routine))
     
     if keyMap[KEY.Reset].isPressed():
         Motion = False
+        print("PS pressed : Motion is {}}".format(Motion))
     
     if keyMap[KEY.Freeze].isPressed():
         Frozen = not Frozen
+        print("L3 pressed : Frozen is {}}".format(Frozen))
 
         if Frozen:
             frozenPosition.copyNewPosition(reqPosition)
@@ -194,24 +198,24 @@ def updatePositionRotation():
     global AutoPilot
 
     if not Motion:
-        reqPosition.copyNewPosition(zeroPosition)
-        reqRotation.copyNewPosition(zeroRotation)
-        print("Zero Position")
+        kinematics.requestedPlatformPosition.copyNewPosition(zeroPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(zeroRotation)
+        #print("Zero Position")
 
     elif Frozen:
-        reqPosition.copyNewPosition(frozenPosition)
-        reqRotation.copyNewPosition(frozenRotation)
-        print("Frozen Position")
+        kinematics.requestedPlatformPosition.copyNewPosition(frozenPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(frozenRotation)
+        #print("Frozen Position")
     
     elif AutoPilot:
-        reqPosition.copyNewPosition(autoPosition)
-        reqRotation.copyNewPosition(autoRotation)
-        print("AutoPilot Position")
+        kinematics.requestedPlatformPosition.copyNewPosition(autoPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(autoRotation)
+        #print("AutoPilot Position")
     
     else:
-        reqPosition.copyNewPosition(ctrlPosition)
-        reqRotation.copyNewPosition(ctrlRotation)
-        print("Controller Position")
+        kinematics.requestedPlatformPosition.copyNewPosition(ctrlPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(ctrlRotation)
+        #print("Controller Position")
 
 ###########################################
 # main 
@@ -241,6 +245,8 @@ def main():
             handleButtons()
             handleAxes()                    
             updatePositionRotation()
+
+            time.sleep(1.0/60.0)
 
             kinematicsCalc()
                        
