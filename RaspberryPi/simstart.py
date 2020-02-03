@@ -4,6 +4,7 @@ from __future__ import division
 import sys
 import socket
 import kinematics
+#import autopilot
 import servoArmDefines
 
 from enum import IntEnum
@@ -39,20 +40,12 @@ class KEY(IntEnum):
     Brake  = 11
     Throttle = 12
 
-class AP(IntEnum):
-    CircleCW  = 0
-    CircleCCW = 1
-    SineWave  = 2
-    Square    = 3
-    Count     = 4
-
-
 exitThread = False
 
 Motion = False
 AutoPilot = False
 Frozen = False
-AP_Routine = AP.CircleCW
+AP_Routine = autopilot.Function.CircleCW
 
 reqPosition = Position(0.0, 0.0, 0.0)
 reqRotation = Position(0.0, 0.0, 0.0)
@@ -110,9 +103,6 @@ def controls(threadname):
     
     print("Starting controls thread...")
     
-    MIN = -10
-    MAX = 10
-    
     while not exitThread:
         # Read inputs from controller
         DS4.read_input()
@@ -130,7 +120,6 @@ def controls(threadname):
         keyMap[KEY.Yaw].setAxis(DS4.inputKeyMap['rt_x'])
         keyMap[KEY.Throttle].setAxis(DS4.inputKeyMap['r2'])
         keyMap[KEY.Brake].setAxis(DS4.inputKeyMap['l2'])
-        
         
 ###########################################
 # kinematics 
@@ -159,6 +148,9 @@ def handleButtons():
         
     if keyMap[KEY.SetAP].isPressed():
         AutoPilot = not AutoPilot
+
+        if AutoPilot:
+            autopilot.chooseAP(AP_Routine)
 
     if keyMap[KEY.NewAP].isPressed():
         AP_Routine = (AP_Routine + 1) % AP.Count
@@ -241,15 +233,11 @@ def main():
 
             kinematicsCalc()
                        
-            #print("\rRoll: {:>6.3f} | Pitch: {:>6.3f} | Yaw:{:>6.3f}\r".format(roll, pitch, yaw))
         except KeyboardInterrupt:
-            raise
             exitThread = True
-            break
 
     # Close down threads
     controls_thread.join()
-    #kinematics_thread.join()
     
     print("Threads have been closed..")
 
