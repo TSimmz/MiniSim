@@ -10,38 +10,44 @@ class Keys:
     def __init__(self):
         self.value    = False
         self.prevVal  = False
+        
         self.press    = False
         self.hold     = False
         self.release  = False
+        
         self.axis     = 0.0
         
     def setAxis(self, value):
         self.axis = value
         
     def setKeyState(self, value):
+        self.prevVal = self.value
         self.value = value
+        
+        #print("Value: {} | {} :Prev".format(self.value, self.prevVal))
         
         if self.value and not self.prevVal:
             self.press = True
             self.hold  = False
             self.release = False
+            #print("Key pressed")
         
-        if self.value and self.prevVal:
+        elif self.value and self.prevVal:
             self.press = False
             self.hold  = True
             self.release = False
+            #print("Key held")
             
-        if not self.value and self.prevVal:
+        elif not self.value and self.prevVal:
             self.press = False
             self.hold = False
             self.release = True
+            #print("Key released")
         
-        if not self.value and not self.prevVal:
-            self.press = False
-            self.hold = False
-            self.release = False
-            
-        self.prevVal = self.value
+#         if not self.value and not self.prevVal:
+#             self.press = False
+#             self.hold = False
+#             self.release = False
     
     def isPressed(self):
         return self.press

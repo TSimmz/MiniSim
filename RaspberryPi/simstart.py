@@ -13,6 +13,7 @@ from threading import Thread
 from controller import Controller
 from position import Position
 from keys import Keys
+from gpiozero import LED
 
 import ADIHSI
 import Adafruit_PCA9685
@@ -43,8 +44,13 @@ class KEY(IntEnum):
 exitThread = False
 
 Motion = False
+MotionLed = LED(13)
 AutoPilot = False
+AutoPilotLed = LED(19)
 Frozen = False
+SetFrozen = False
+FrozenLed = LED(26)
+
 AP_Routine = autopilot.Function.CircleCW
 
 reqPosition = Position(0.0, 0.0, 0.0)
@@ -64,6 +70,7 @@ frozenRotation = Position(0.0, 0.0, 0.0)
 
 PWM = Adafruit_PCA9685.PCA9685()
 DS4 = Controller()
+
 
 #myDisplay = ADIHSI.Display()
 
@@ -121,6 +128,10 @@ def controls(threadname):
         keyMap[KEY.Throttle].setAxis(DS4.inputKeyMap['r2'])
         keyMap[KEY.Brake].setAxis(DS4.inputKeyMap['l2'])
         
+        handleButtons()
+        handleAxes()
+        updatePositionRotation()
+        
 ###########################################
 # kinematics 
 ###########################################
@@ -142,37 +153,47 @@ def kinematicsCalc():
 def handleButtons():
     global Motion
     global Frozen
+    global SetFrozen
     global AutoPilot
     global AP_Routine
     
     if keyMap[KEY.Start].isPressed():
         Motion = not Motion
-        print("Start pressed : Motion is {}".format(Motion))
+        #print("Start pressed : Motion is {}".format(Motion))
         
     if keyMap[KEY.SetAP].isPressed():
         AutoPilot = not AutoPilot
-        print("R3 pressed : AutoPilot is {}".format(AutoPilot))
+        #print("R3 pressed : AutoPilot is {}".format(AutoPilot))
 
         if AutoPilot:
             autopilot.chooseAP(AP_Routine)
 
     if keyMap[KEY.NewAP].isPressed():
-        AP_Routine = (AP_Routine + 1) % AP.Count
+        AP_Routine = (AP_Routine + 1) % autopilot.Function.Count
         
-        print("Select pressed : AP Count is {}".format(AP_Routine))
+        #print("Select pressed : AP Count is {}".format(AP_Routine))
     
     if keyMap[KEY.Reset].isPressed():
         Motion = False
-        print("PS pressed : Motion is {}}".format(Motion))
+        #print("PS pressed : Motion is {}".format(Motion))
     
     if keyMap[KEY.Freeze].isPressed():
         Frozen = not Frozen
-        print("L3 pressed : Frozen is {}}".format(Frozen))
+        #print("L3 pressed : Frozen is {}".format(Frozen))
 
-        if Frozen:
-            frozenPosition.copyNewPosition(reqPosition)
-            frozenPosition.copyNewPosition(reqRotation)
-
+        if not Frozen:
+            SetFrozen = False
+        
+        if Frozen and AutoPilot:
+            print("Setting auto frozen positions")
+            frozenPosition.copyNewPosition(autoPosition)
+            frozenPosition.copyNewPosition(autoRotation)
+        
+        if Frozen and Motion and not SetFrozen:
+            print("Setting controls frozen positions")
+            frozenPosition.copyNewPosition(ctrlPosition)
+            frozenPosition.copyNewPosition(ctrlRotation)
+            SetFrozen = True
 
 ###########################################
 # handles the axes changes from DS4
@@ -241,11 +262,28 @@ def main():
         
     while not exitThread:
         try:
-
-            handleButtons()
-            handleAxes()                    
-            updatePositionRotation()
-
+                        
+            if Motion:
+                MotionLed.on()
+            else:
+                MotionLed.off()
+            
+            if AutoPilot:
+                AutoPilotLed.on()
+            else:
+                AutoPilotLed.off()
+            
+            if Frozen:
+                FrozenLed.on()
+            else:
+                FrozenLed.off()
+            
+            #handleButtons()
+            #handleAxes()                    
+            #updatePositionRotation()
+            
+            #print("Ctrls Value: {} | {} :Prev".format(keyMap[KEY.Start].value, keyMap[KEY.Start].prevVal))
+            
             time.sleep(1.0/60.0)
 
             kinematicsCalc()
