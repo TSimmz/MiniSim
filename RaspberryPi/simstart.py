@@ -44,11 +44,11 @@ class KEY(IntEnum):
 exitThread = False
 
 Motion = False
-MotionLed = LED(13)
 AutoPilot = False
-AutoPilotLed = LED(19)
 Frozen = False
-SetFrozen = False
+
+MotionLed = LED(13)
+AutoPilotLed = LED(19)
 FrozenLed = LED(26)
 
 AP_Routine = autopilot.Function.CircleCW
@@ -70,7 +70,6 @@ frozenRotation = Position(0.0, 0.0, 0.0)
 
 PWM = Adafruit_PCA9685.PCA9685()
 DS4 = Controller()
-
 
 #myDisplay = ADIHSI.Display()
 
@@ -153,7 +152,6 @@ def kinematicsCalc():
 def handleButtons():
     global Motion
     global Frozen
-    global SetFrozen
     global AutoPilot
     global AP_Routine
     
@@ -181,20 +179,6 @@ def handleButtons():
         if Frozen: 
             Motion = False
             AutoPilot = False
-
-        # if not Frozen:
-        #     SetFrozen = False
-        
-        # if Frozen and AutoPilot:
-        #     #print("Setting auto frozen positions")
-        #     frozenPosition.copyNewPosition(autoPosition)
-        #     frozenPosition.copyNewPosition(autoRotation)
-        
-        # if Frozen and Motion and not SetFrozen:
-        #     #print("Setting controls frozen positions")
-        #     frozenPosition.copyNewPosition(ctrlPosition)
-        #     frozenPosition.copyNewPosition(ctrlRotation)
-        #     SetFrozen = True
 
 ###########################################
 # handles the axes changes from DS4
