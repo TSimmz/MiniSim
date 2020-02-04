@@ -159,41 +159,42 @@ def handleButtons():
     
     if keyMap[KEY.Start].isPressed():
         Motion = not Motion
-        #print("Start pressed : Motion is {}".format(Motion))
+
+        if Motion:
+            AutoPilot = False
         
     if keyMap[KEY.SetAP].isPressed():
         AutoPilot = not AutoPilot
-        #print("R3 pressed : AutoPilot is {}".format(AutoPilot))
 
         if AutoPilot:
-            autopilot.chooseAP(AP_Routine)
+            Motion = False
 
     if keyMap[KEY.NewAP].isPressed():
         AP_Routine = (AP_Routine + 1) % autopilot.Function.Count
-        
-        #print("Select pressed : AP Count is {}".format(AP_Routine))
     
     if keyMap[KEY.Reset].isPressed():
         Motion = False
-        #print("PS pressed : Motion is {}".format(Motion))
     
     if keyMap[KEY.Freeze].isPressed():
         Frozen = not Frozen
-        #print("L3 pressed : Frozen is {}".format(Frozen))
 
-        if not Frozen:
-            SetFrozen = False
+        if Frozen: 
+            Motion = False
+            AutoPilot = False
+
+        # if not Frozen:
+        #     SetFrozen = False
         
-        if Frozen and AutoPilot:
-            print("Setting auto frozen positions")
-            frozenPosition.copyNewPosition(autoPosition)
-            frozenPosition.copyNewPosition(autoRotation)
+        # if Frozen and AutoPilot:
+        #     #print("Setting auto frozen positions")
+        #     frozenPosition.copyNewPosition(autoPosition)
+        #     frozenPosition.copyNewPosition(autoRotation)
         
-        if Frozen and Motion and not SetFrozen:
-            print("Setting controls frozen positions")
-            frozenPosition.copyNewPosition(ctrlPosition)
-            frozenPosition.copyNewPosition(ctrlRotation)
-            SetFrozen = True
+        # if Frozen and Motion and not SetFrozen:
+        #     #print("Setting controls frozen positions")
+        #     frozenPosition.copyNewPosition(ctrlPosition)
+        #     frozenPosition.copyNewPosition(ctrlRotation)
+        #     SetFrozen = True
 
 ###########################################
 # handles the axes changes from DS4
@@ -218,25 +219,25 @@ def updatePositionRotation():
     global Frozen
     global AutoPilot
 
-    if not Motion:
-        kinematics.requestedPlatformPosition.copyNewPosition(zeroPosition)
-        kinematics.requestedPlatformRotation.copyNewPosition(zeroRotation)
-        #print("Zero Position")
+    if Motion:
+        kinematics.requestedPlatformPosition.copyNewPosition(ctrlPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(ctrlRotation)
+        frozenPosition.copyNewPosition(ctrlPosition)
+        frozenRotation.copyNewPosition(ctrlRotation)
+
+    elif AutoPilot:
+        kinematics.requestedPlatformPosition.copyNewPosition(autoPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(autoRotation)
+        frozenPosition.copyNewPosition(autoPosition)
+        frozenRotation.copyNewPosition(autoRotation)
 
     elif Frozen:
         kinematics.requestedPlatformPosition.copyNewPosition(frozenPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(frozenRotation)
-        #print("Frozen Position")
-    
-    elif AutoPilot:
-        kinematics.requestedPlatformPosition.copyNewPosition(autoPosition)
-        kinematics.requestedPlatformRotation.copyNewPosition(autoRotation)
-        #print("AutoPilot Position")
-    
+
     else:
-        kinematics.requestedPlatformPosition.copyNewPosition(ctrlPosition)
-        kinematics.requestedPlatformRotation.copyNewPosition(ctrlRotation)
-        #print("Controller Position")
+        kinematics.requestedPlatformPosition.copyNewPosition(zeroPosition)
+        kinematics.requestedPlatformRotation.copyNewPosition(zeroRotation)
 
 ###########################################
 # main 
