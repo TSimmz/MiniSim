@@ -41,11 +41,16 @@ class KEY(IntEnum):
     Brake  = 11
     Throttle = 12
 
+class OPMODE(IntEnum):
+    NoMode = 0
+    Motion = 1
+    Frozen = 2
+    AutoPilot = 3
+    
 exitThread = False
 
-Motion = False
-AutoPilot = False
-Frozen = False
+OperationalMode = OPMODE.NoMode
+prevOperationalMode = OPMODE.NoMode
 
 MotionLed = LED(13)
 AutoPilotLed = LED(19)
@@ -147,38 +152,38 @@ def kinematicsCalc():
         PWM.set_pwm(leg.id, 0, int(leg.currentPWM))
 
 ###########################################
+# 
+###########################################
+def setOperationalMode(newMode):
+    global OperationalMode
+    global prevOperationalMode
+    
+    if OperationalMode == newMode:
+        OperationalMode = prevOperationalMode
+    else:
+        prevOperationalMode = OperationalMode
+        OperationalMode = newMode
+    
+###########################################
 # handles the button presses from DS4
 ###########################################
 def handleButtons():
-    global Motion
-    global Frozen
-    global AutoPilot
     global AP_Routine
     
     if keyMap[KEY.Start].isPressed():
-        Motion = not Motion
-
-        if Motion:
-            AutoPilot = False
+        setOperationalMode(OPMODE.Motion)
         
     if keyMap[KEY.SetAP].isPressed():
-        AutoPilot = not AutoPilot
-
-        if AutoPilot:
-            Motion = False
+        setOperationalMode(OPMODE.AutoPilot)
 
     if keyMap[KEY.NewAP].isPressed():
         AP_Routine = (AP_Routine + 1) % autopilot.Function.Count
     
     if keyMap[KEY.Reset].isPressed():
-        Motion = False
+        setOperationalMode(OPMODE.NoMode)
     
     if keyMap[KEY.Freeze].isPressed():
-        Frozen = not Frozen
-
-        if Frozen: 
-            Motion = False
-            AutoPilot = False
+        setOperationalMode(OPMODE.Frozen)
 
 ###########################################
 # handles the axes changes from DS4
@@ -199,23 +204,21 @@ def handleAxes():
 # 
 ###########################################
 def updatePositionRotation():
-    global Motion
-    global Frozen
-    global AutoPilot
-
-    if Motion:
+    global OperationalMode
+    
+    if OperationalMode == OPMODE.Motion:
         kinematics.requestedPlatformPosition.copyNewPosition(ctrlPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(ctrlRotation)
         frozenPosition.copyNewPosition(ctrlPosition)
         frozenRotation.copyNewPosition(ctrlRotation)
 
-    elif AutoPilot:
+    elif OperationalMode == OPMODE.AutoPilot:
         kinematics.requestedPlatformPosition.copyNewPosition(autoPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(autoRotation)
         frozenPosition.copyNewPosition(autoPosition)
         frozenRotation.copyNewPosition(autoRotation)
 
-    elif Frozen:
+    elif OperationalMode == OPMODE.Frozen:
         kinematics.requestedPlatformPosition.copyNewPosition(frozenPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(frozenRotation)
 
@@ -229,6 +232,7 @@ def updatePositionRotation():
 ###########################################
 def main():
     global exitThread
+    global OperationalMode
     
     print("Starting main thread...\n...")
     print("Starting setup...\n...") 
@@ -248,19 +252,24 @@ def main():
     while not exitThread:
         try:
                         
-            if Motion:
+            if OperationalMode == OPMODE.Motion:
                 MotionLed.on()
             else:
                 MotionLed.off()
             
-            if AutoPilot:
+            if OperationalMode == OPMODE.AutoPilot:
                 AutoPilotLed.on()
             else:
                 AutoPilotLed.off()
             
-            if Frozen:
+            if OperationalMode == OPMODE.Frozen:
                 FrozenLed.on()
             else:
+                FrozenLed.off()
+                
+            if OperationalMode == OPMODE.NoMode:
+                MotionLed.off()
+                AutoPilotLed.off()
                 FrozenLed.off()
             
             #handleButtons()
