@@ -26,6 +26,8 @@ class ServoArm():
         self.mirror = False
 
         self.alphaAngle = 0.0
+        self.prevAlphaAngle = 0.0
+        
         self.betaAngle = 0.0
 
         self.LPrime = 0.0

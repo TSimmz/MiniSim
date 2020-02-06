@@ -189,13 +189,15 @@ def handleButtons():
 # handles the axes changes from DS4
 ###########################################
 def handleAxes():
+    MIN = -20
+    MAX = 20
     
     surge = ctrlPosition.x_coord + keyMap[KEY.Surge].axis
     sway  = ctrlPosition.y_coord + keyMap[KEY.Sway].axis
-    heave = kinematics.mapValues(keyMap[KEY.Heave].axis, -1.0, 1.0, -10.0, 10.0)
-    roll  = kinematics.mapValues(keyMap[KEY.Roll].axis , -1.0, 1.0, -10.0, 10.0)
-    pitch = kinematics.mapValues(keyMap[KEY.Pitch].axis, -1.0, 1.0, -10.0, 10.0)
-    yaw   = kinematics.mapValues(keyMap[KEY.Yaw].axis  , -1.0, 1.0, -10.0, 10.0) 
+    heave = kinematics.mapValues(keyMap[KEY.Heave].axis, 1.0, -1.0, -40.0, 40.0)
+    roll  = kinematics.mapValues(keyMap[KEY.Roll].axis , -1.0, 1.0, MIN, MAX)
+    pitch = kinematics.mapValues(keyMap[KEY.Pitch].axis, -1.0, 1.0, MIN, MAX)
+    yaw   = kinematics.mapValues(keyMap[KEY.Yaw].axis  , -1.0, 1.0, MIN, MAX) 
          
     ctrlPosition.setNewPosition(surge, sway, heave)
     ctrlRotation.setNewPosition(roll, pitch, yaw)

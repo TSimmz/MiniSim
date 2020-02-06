@@ -5,7 +5,7 @@ from itertools import count
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-class Logging:
+class SimLog:
     def __init__(self):
         self.figure,self.axis = plt.subplots()
         
@@ -18,7 +18,6 @@ class Logging:
         self.servo5Data = []
         self.servo6Data = []
         
-        self.axis
         
     def setData(alpha):
         timeElapsed.append(next(timer))
@@ -29,13 +28,11 @@ class Logging:
         servo5Data.append(alpha[4])
         servo6Data.append(alpha[5])
     
-    def animate(i):
+    #def animate(i):
     
-    def graphData()
-        
-        
-        pltAni = FuncAnimation(plt.gcg(),
-        
-        plt.tight_layout()
-        plt.show()
+    #def graphData():       
+    #    pltAni = FuncAnimation(plt.gcg(),
+    #    
+    #    plt.tight_layout()
+    #    plt.show()
         
