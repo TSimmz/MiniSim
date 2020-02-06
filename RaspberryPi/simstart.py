@@ -52,6 +52,8 @@ exitThread = False
 OperationalMode = OPMODE.NoMode
 prevOperationalMode = OPMODE.NoMode
 
+index = 0
+
 MotionLed = LED(13)
 AutoPilotLed = LED(19)
 FrozenLed = LED(26)
@@ -207,6 +209,7 @@ def handleAxes():
 ###########################################
 def updatePositionRotation():
     global OperationalMode
+    global index
     
     if OperationalMode == OPMODE.Motion:
         kinematics.requestedPlatformPosition.copyNewPosition(ctrlPosition)
@@ -235,6 +238,7 @@ def updatePositionRotation():
 def main():
     global exitThread
     global OperationalMode
+    global autoRotation
     
     print("Starting main thread...\n...")
     print("Starting setup...\n...") 
@@ -251,6 +255,8 @@ def main():
     print("Setup complete!")
     time.sleep(1)
         
+    index = 0
+    
     while not exitThread:
         try:
                         
@@ -261,6 +267,16 @@ def main():
             
             if OperationalMode == OPMODE.AutoPilot:
                 AutoPilotLed.on()
+
+                roll, pitch = autopilot.sinusoidal(index)
+                print("Index: {} | Roll: {} | Pitch: {}".format(index, roll, pitch))
+                index += 1
+                
+                
+                autoRotation.setNewPosition(roll, pitch, 0.0)
+                
+                if index == 360:
+                    index = 0
             else:
                 AutoPilotLed.off()
             

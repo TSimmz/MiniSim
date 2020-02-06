@@ -3,6 +3,8 @@
 import math
 from enum import IntEnum
 
+ANGLE_MAX = 15
+
 class Function(IntEnum):
     CircleCW  = 0
     CircleCCW = 1
@@ -13,10 +15,11 @@ class Function(IntEnum):
 #def circular(radius, axis1, axis2, dir):
 #    for i in range(-radius, radius)
 
-def sinusoidal(axis1, axis2, dir):
-    for deg in range(360):
-        angle1 = ANGLE_MAX * (sin(radians(deg)))
-        angle2 = ANGLE_MAX * (sin(radians(deg) - (math.pi / 2)))
+def sinusoidal(index):
+    angle1 = ANGLE_MAX * (math.sin(math.radians(index)))
+    angle2 = ANGLE_MAX * (math.sin(math.radians(index) - (math.pi / 2)))
+    
+    return angle1, angle2
 
 
 #def helix(radius, axis1, axis2, axis3, dir):
