@@ -133,10 +133,9 @@ def controls(threadname):
         keyMap[KEY.Yaw].setAxis(DS4.inputKeyMap['rt_x'])
         keyMap[KEY.Throttle].setAxis(DS4.inputKeyMap['r2'])
         keyMap[KEY.Brake].setAxis(DS4.inputKeyMap['l2'])
-        
+                
         handleButtons()
         handleAxes()
-        updatePositionRotation()
         
 ###########################################
 # kinematics 
@@ -259,7 +258,9 @@ def main():
     
     while not exitThread:
         try:
-                        
+            
+            updatePositionRotation()
+            
             if OperationalMode == OPMODE.Motion:
                 MotionLed.on()
             else:
@@ -269,8 +270,8 @@ def main():
                 AutoPilotLed.on()
 
                 roll, pitch = autopilot.sinusoidal(index)
-                print("Index: {} | Roll: {} | Pitch: {}".format(index, roll, pitch))
-                index += 1
+                #print("Index: {} | Roll: {} | Pitch: {}".format(index, roll, pitch))
+                index += 3
                 
                 
                 autoRotation.setNewPosition(roll, pitch, 0.0)
@@ -296,7 +297,7 @@ def main():
             
             #print("Ctrls Value: {} | {} :Prev".format(keyMap[KEY.Start].value, keyMap[KEY.Start].prevVal))
             
-            time.sleep(1.0/60.0)
+            #time.sleep(1.0/60.0)
 
             kinematicsCalc()
                        
