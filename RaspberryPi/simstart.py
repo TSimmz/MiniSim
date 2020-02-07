@@ -4,7 +4,6 @@ from __future__ import division
 import sys
 import socket
 import kinematics
-import autopilot
 import servoArmDefines
 
 from enum import IntEnum
@@ -13,6 +12,7 @@ from threading import Thread
 from controller import Controller
 from position import Position
 from keys import Keys
+from autopilot import AutoPilot, APFunction
 from gpiozero import LED
 
 import ADIHSI
@@ -58,7 +58,7 @@ MotionLed = LED(13)
 AutoPilotLed = LED(19)
 FrozenLed = LED(26)
 
-AP_Routine = autopilot.Function.CircleCW
+AP_Routine = APFunction.CircleCW
 
 reqPosition = Position(0.0, 0.0, 0.0)
 reqRotation = Position(0.0, 0.0, 0.0)
@@ -77,6 +77,7 @@ frozenRotation = Position(0.0, 0.0, 0.0)
 
 PWM = Adafruit_PCA9685.PCA9685()
 DS4 = Controller()
+AP  = AutoPilot()
 
 #myDisplay = ADIHSI.Display()
 
@@ -269,15 +270,12 @@ def main():
             if OperationalMode == OPMODE.AutoPilot:
                 AutoPilotLed.on()
 
-                roll, pitch = autopilot.sinusoidal(index)
-                #print("Index: {} | Roll: {} | Pitch: {}".format(index, roll, pitch))
-                index += 3
-                
-                
+                roll, pitch = AP.sinusoidal()
                 autoRotation.setNewPosition(roll, pitch, 0.0)
                 
-                if index == 360:
-                    index = 0
+                #surge, sway = AP.circular()
+                #autoPosition.setNewPosition(surge, sway, 0.0)
+                            
             else:
                 AutoPilotLed.off()
             
