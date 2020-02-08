@@ -60,8 +60,8 @@ FrozenLed = LED(26)
 
 AP_Routine = APFunction.CircleCW
 
-reqPosition = Position(0.0, 0.0, 0.0)
-reqRotation = Position(0.0, 0.0, 0.0)
+masterPosition = Position(0.0, 0.0, 0.0)
+masterRotation = Position(0.0, 0.0, 0.0)
 
 zeroPosition = Position(0.0, 0.0, 0.0)
 zeroRotation = Position(0.0, 0.0, 0.0)
@@ -78,8 +78,7 @@ frozenRotation = Position(0.0, 0.0, 0.0)
 PWM = Adafruit_PCA9685.PCA9685()
 DS4 = Controller()
 AP  = AutoPilot()
-
-#myDisplay = ADIHSI.Display()
+INST = ADIHSI.Display()
 
 ###########################################
 # Helper function to initialize controls
@@ -137,7 +136,15 @@ def controls(threadname):
                 
         handleButtons()
         handleAxes()
-        
+    
+def display():
+    global masterPosition
+    global masterRotation
+    
+    print("Starting display thread...")
+    
+    
+    
 ###########################################
 # kinematics 
 ###########################################
@@ -216,20 +223,32 @@ def updatePositionRotation():
         kinematics.requestedPlatformRotation.copyNewPosition(ctrlRotation)
         frozenPosition.copyNewPosition(ctrlPosition)
         frozenRotation.copyNewPosition(ctrlRotation)
+        
+        masterPosition.copyNewPosition(ctrlPosition)
+        masterRotation.copyNewPosiiton(ctrlRotation)
 
     elif OperationalMode == OPMODE.AutoPilot:
         kinematics.requestedPlatformPosition.copyNewPosition(autoPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(autoRotation)
         frozenPosition.copyNewPosition(autoPosition)
         frozenRotation.copyNewPosition(autoRotation)
+        
+        masterPosition.copyNewPosition(autoPosition)
+        masterRotation.copyNewPosiiton(autoRotation)
 
     elif OperationalMode == OPMODE.Frozen:
         kinematics.requestedPlatformPosition.copyNewPosition(frozenPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(frozenRotation)
+        
+        masterPosition.copyNewPosition(frozenPosition)
+        masterRotation.copyNewPosiiton(frozenRotation)
 
     else:
         kinematics.requestedPlatformPosition.copyNewPosition(zeroPosition)
         kinematics.requestedPlatformRotation.copyNewPosition(zeroRotation)
+        
+        masterPosition.copyNewPosition(zeroPosition)
+        masterRotation.copyNewPosiiton(zeroRotation)
 
 ###########################################
 # main 
@@ -251,6 +270,9 @@ def main():
     # Setup and start the controls thread
     controls_thread = Thread(target=controls, args=("controls_thread",))
     controls_thread.start()
+    
+    display_thread = Thread(target=display, args=("display_thread",))
+    display_thread.start()
 
     print("Setup complete!")
     time.sleep(1)
@@ -272,9 +294,6 @@ def main():
 
                 roll, pitch = AP.sinusoidal()
                 autoRotation.setNewPosition(roll, pitch, 0.0)
-                
-                #surge, sway = AP.circular()
-                #autoPosition.setNewPosition(surge, sway, 0.0)
                             
             else:
                 AutoPilotLed.off()
@@ -288,15 +307,8 @@ def main():
                 MotionLed.off()
                 AutoPilotLed.off()
                 FrozenLed.off()
-            
-            #handleButtons()
-            #handleAxes()                    
-            #updatePositionRotation()
-            
-            #print("Ctrls Value: {} | {} :Prev".format(keyMap[KEY.Start].value, keyMap[KEY.Start].prevVal))
-            
-            #time.sleep(1.0/60.0)
-
+                
+                
             kinematicsCalc()
                        
         except KeyboardInterrupt:
@@ -304,6 +316,7 @@ def main():
 
     # Close down threads
     controls_thread.join()
+    display_thread.join()
     
     print("Threads have been closed..")
 

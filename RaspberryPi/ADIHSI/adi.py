@@ -6,6 +6,9 @@ class ADI:
     'ADI class'
     def __init__(self):
         self.border = turtle.Turtle()
+        self.center = []
+        sefl.center[0] =
+        
         
         self.border.hideturtle()
         self.border.speed(0)
@@ -22,7 +25,15 @@ class ADI:
             self.border.rt(90)
             
         self.border.end_fill()
-
+        
+        self.xyIndicator = turtle.Turtle()
+    
+        
+    def updatePitch(pitch):
+        
+    def drawXYIndicator():
+        self.xyIndicator
+        
 
 #adi_lower = turtle.Turtle()
 #adi_lower.speed(0)
