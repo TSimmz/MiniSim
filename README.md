@@ -1,9 +1,11 @@
 # MiniSim
+A codebase for a desktop Stewart platform written in Python. 
 
 ## Dependencies
 
 ### DS4DRV
-__Sony Dual Shock 4 drivers for Raspberry Pi__
+__Sony Dual Shock 4 drivers for Raspberry Pi__ 
+
 Commands: 
 ```
 sudo apt update
